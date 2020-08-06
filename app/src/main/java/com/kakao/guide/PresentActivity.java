@@ -34,7 +34,7 @@ public class PresentActivity extends AppCompatActivity {
 
 
         // 화면 넘김.
-        final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        final Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
 
         final Button start = (Button) findViewById(R.id.start); //뷰페이지 마지막에 노출될 '시작하기'
         //final TextView next = (TextView) findViewById(R.id.next); //건너뛰기
