@@ -78,6 +78,7 @@ public class PresentActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(intent);
+                finish();
             }
         });
 
