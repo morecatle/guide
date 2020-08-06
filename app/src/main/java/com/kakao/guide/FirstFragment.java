@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -42,7 +43,6 @@ public class FirstFragment extends Fragment {
 //        tvLabel.setText(page + " -- " + title);
 
         ImageView imageView1 = (ImageView) view.findViewById(R.id.image1);
-
         return view;
     }
 }
