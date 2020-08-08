@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "956907091533",
+    "firebase_url": "https://graduation-285713.firebaseio.com",
+    "project_id": "graduation-285713",
+    "storage_bucket": "graduation-285713.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956907091533:android:19f9e1f0d31dfb3a610e04",
+        "android_client_info": {
+          "package_name": "com.kakao.guide"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956907091533-ijobhb7mrgodn0br24ebjhlq7odrgr95.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kakao.guide",
+            "certificate_hash": "946de896363b3d35376eb70c0035fed8096f8abb"
+          }
+        },
+        {
+          "client_id": "956907091533-el344ctepsuk4v2jhmjiv3v9fvb1ul3j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDikWZdTKHruDhadjEVhPM0vOX1LEmCemg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "956907091533-el344ctepsuk4v2jhmjiv3v9fvb1ul3j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

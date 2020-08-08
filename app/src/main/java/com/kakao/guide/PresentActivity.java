@@ -2,10 +2,8 @@ package com.kakao.guide;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,7 +32,7 @@ public class PresentActivity extends AppCompatActivity {
 
 
         // 화면 넘김.
-        final Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        final Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
 
         final Button start = (Button) findViewById(R.id.start); //뷰페이지 마지막에 노출될 '시작하기'
         //final TextView next = (TextView) findViewById(R.id.next); //건너뛰기
