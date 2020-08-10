@@ -45,7 +45,7 @@
             android:layout_marginBottom="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="GTXS488533"
+            android:text="..."
             android:textStyle="bold"
             android:textSize="25dp"/>
 
@@ -64,20 +64,24 @@
                 android:layout_height="wrap_content"
                 android:hint="이름"/>
             <TextView
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:gravity="center"
                 android:layout_weight="1"
                 android:layout_marginLeft="10dp"
-                android:id="@+id/edit_genderMan"
+                android:id="@+id/text_genderMan"
                 android:padding="10dp"
                 android:background="@drawable/white_edittext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="남"/>
             <TextView
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:gravity="center"
                 android:layout_weight="1"
                 android:layout_marginLeft="5dp"
-                android:id="@+id/edit_genderWoman"
+                android:id="@+id/text_genderWoman"
                 android:padding="10dp"
                 android:background="@drawable/white_edittext"
                 android:layout_width="wrap_content"
