@@ -152,7 +152,11 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // 인증 성공. 다음 단계로.
                             Intent intent = new Intent(RegisterActivity.this, Register2Activity.class);
+                            intent.putExtra("phone", number);
+
                             startActivity(intent);
+
+
 
 
                             /*

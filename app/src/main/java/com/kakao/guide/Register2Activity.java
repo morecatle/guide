@@ -1,5 +1,6 @@
 package com.kakao.guide;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,7 +19,7 @@ public class Register2Activity extends AppCompatActivity {
     TextView code, genderMan, genderWoman;
     EditText name, pass, rePass, mail;
     Button storeOk;
-    String stCode, stName, stGender, stPass, stRePass, stMail, stPhone = "01063462260";
+    String stCode, stName, stGender, stPass, stRePass, stMail, stPhone;
     Boolean isManSelected=false; // 성별선택여부.
     Boolean isWomanSelected=false; // 성별선택여부.
     Boolean done=false; // 오류없이 잘 입력했는지.
@@ -34,6 +35,10 @@ public class Register2Activity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register2_layout);
+
+        Intent intent = getIntent();
+        stPhone = intent.getExtras().getString("phone");
+
 
         code = (TextView)findViewById(R.id.text_code);
         genderMan = (TextView)findViewById(R.id.text_genderMan);
