@@ -11,14 +11,23 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class Register2Activity extends AppCompatActivity {
     TextView code, genderMan, genderWoman;
     EditText name, pass, rePass, mail;
     Button storeOk;
-    String stName, stPass, stRePass, stMail;
+    String stCode, stName, stGender, stPass, stRePass, stMail, stPhone = "01063462260";
     Boolean isManSelected=false; // 성별선택여부.
     Boolean isWomanSelected=false; // 성별선택여부.
     Boolean done=false; // 오류없이 잘 입력했는지.
+
+    // 파이어베이스 연결.
+    FirebaseDatabase rootNode;
+    DatabaseReference reference;
+
+
 
 
     @Override
@@ -55,6 +64,7 @@ public class Register2Activity extends AppCompatActivity {
                     }
                     genderMan.setBackgroundResource(R.drawable.isgender_textview);
                     isManSelected = true;
+                    stGender = "남";
                 } else {
                     genderMan.setBackgroundResource(R.drawable.white_edittext);
                     isManSelected = false;
@@ -72,6 +82,7 @@ public class Register2Activity extends AppCompatActivity {
                     }
                     genderWoman.setBackgroundResource(R.drawable.isgender_textview);
                     isWomanSelected = true;
+                    stGender = "여";
                 } else {
                     genderWoman.setBackgroundResource(R.drawable.white_edittext);
                     isWomanSelected = false;
@@ -134,6 +145,12 @@ public class Register2Activity extends AppCompatActivity {
                 stRePass = rePass.getText().toString().trim();
                 stMail = mail.getText().toString().trim();
 
+
+
+
+
+
+
                 // 입력창이 빈칸일 때.
                 if(stName.isEmpty()) {
                     name.setError("이름을 입력해주세요.");
@@ -166,6 +183,16 @@ public class Register2Activity extends AppCompatActivity {
                     sendDB("", "", "", '무', "");
 
                 }
+
+
+                rootNode = FirebaseDatabase.getInstance();
+                reference = rootNode.getReference("user");
+                UserHelperClass helperClass = new UserHelperClass(stCode, stName,stGender, stPass, stMail, stPhone);
+
+                reference.child(stCode).setValue(helperClass);
+
+                //reference.setValue(helperClass);
+
             }
         });
     }
@@ -204,6 +231,7 @@ public class Register2Activity extends AppCompatActivity {
             answer += result[x];
         }
 
+        stCode = answer;
         return answer;
     }
 }
