@@ -75,39 +75,39 @@
             android:textStyle="bold"/>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_marginBottom="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SNS 계정으로 로그인하기"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp">
-        <ImageView
-            android:background="#FFE400"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
-        <ImageView
-            android:background="#ABF200"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
-        <ImageView
-            android:background="#6799FF"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
-        <ImageView
-            android:background="#FF00DD"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
-    </LinearLayout>
+<!--    <LinearLayout-->
+<!--        android:layout_marginBottom="10dp"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="horizontal">-->
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="SNS 계정으로 로그인하기"/>-->
+<!--    </LinearLayout>-->
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="50dp">-->
+<!--        <ImageView-->
+<!--            android:background="#FFE400"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="match_parent" />-->
+<!--        <ImageView-->
+<!--            android:background="#ABF200"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="match_parent" />-->
+<!--        <ImageView-->
+<!--            android:background="#6799FF"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="match_parent" />-->
+<!--        <ImageView-->
+<!--            android:background="#FF00DD"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="match_parent" />-->
+<!--    </LinearLayout>-->
 
 </LinearLayout>

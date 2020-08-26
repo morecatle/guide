@@ -9,9 +9,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -23,22 +27,21 @@ public class Register2Activity extends AppCompatActivity {
     Boolean isManSelected=false; // 성별선택여부.
     Boolean isWomanSelected=false; // 성별선택여부.
     Boolean done=false; // 오류없이 잘 입력했는지.
+    Boolean answer = false; // 코드가 중복인지 여부.
 
     // 파이어베이스 연결.
     FirebaseDatabase rootNode;
     DatabaseReference reference;
-
-
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register2_layout);
 
+        // ㅁㅁㅁㅁㅁ 이 클래스만 실행 시 주석 처리를 해야 정상실행됩니다.
         Intent intent = getIntent();
         stPhone = intent.getExtras().getString("phone");
-
+        /////
 
         code = (TextView)findViewById(R.id.text_code);
         genderMan = (TextView)findViewById(R.id.text_genderMan);
@@ -49,13 +52,13 @@ public class Register2Activity extends AppCompatActivity {
         mail = (EditText)findViewById(R.id.edit_mail);
         storeOk = (Button)findViewById(R.id.btn_storeOk);
 
-
-        code.setText(randomCode());
-        /*
-        while(isDuplication(randomCode())) {
-            code.setText(randomCode());
-        }
-*/
+        String result = "";
+        do {
+            //result = "JUE7491";
+            result = randomCode();
+            code.setText(result);
+        } while(isCode(result));
+        // 조건: 중복이면 반복. 중복이면 true 반환.
 
 
         // 성별 선택.
@@ -95,6 +98,22 @@ public class Register2Activity extends AppCompatActivity {
             }
         });
 
+        pass.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                stPass = pass.getText().toString().trim();
+                System.out.println(stPass);
+            }
+        });
+
+
+        // 비밀번호 중복 확인.
         rePass.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -103,7 +122,12 @@ public class Register2Activity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // 입력되는 텍스트에 변화가 있을 때
-                if(!pass.getText().toString().trim().equals(rePass.getText().toString().trim())) {
+
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                // 입력이 끝났을 때
+                if(!(stPass.equals(rePass.getText().toString().trim()))) {
                     rePass.setError("중복이 아닙니다.");
                     done = false;
                 } else {
@@ -111,12 +135,9 @@ public class Register2Activity extends AppCompatActivity {
                 }
                 //rePass.setError("중복이 아닙니다.");
             }
-            @Override
-            public void afterTextChanged(Editable s) {
-                // 입력이 끝났을 때
-            }
         });
 
+        // 이메일 형식 체크.
         mail.addTextChangedListener(new TextWatcher() {
             String emailValidation = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
             String email;
@@ -142,6 +163,7 @@ public class Register2Activity extends AppCompatActivity {
             }
         });
 
+        // 회원가입 버튼.
         storeOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -150,13 +172,7 @@ public class Register2Activity extends AppCompatActivity {
                 stRePass = rePass.getText().toString().trim();
                 stMail = mail.getText().toString().trim();
 
-
-
-
-
-
-
-                // 입력창이 빈칸일 때.
+                // 입력창 빈칸여부.
                 if(stName.isEmpty()) {
                     name.setError("이름을 입력해주세요.");
                     name.requestFocus();
@@ -185,39 +201,50 @@ public class Register2Activity extends AppCompatActivity {
                 }
 
                 if(done) { // 입력 제대로 하면...
-                    sendDB("", "", "", '무', "");
+                    rootNode = FirebaseDatabase.getInstance();
+                    reference = rootNode.getReference("user");
+                    UserHelperClass helperClass = new UserHelperClass(stCode, stName,stGender, stPass, stMail, stPhone);
 
+                    reference.child(stCode).setValue(helperClass);
                 }
-
-
-                rootNode = FirebaseDatabase.getInstance();
-                reference = rootNode.getReference("user");
-                UserHelperClass helperClass = new UserHelperClass(stCode, stName,stGender, stPass, stMail, stPhone);
-
-                reference.child(stCode).setValue(helperClass);
-
-                //reference.setValue(helperClass);
-
             }
         });
     }
 
-    // 입력 후 DB에 정보 넘기기.
-    private void sendDB(String code, String name, String email, char gender, String phone) {
+    //제작된 코드가 중복인지 확인하는 메소드
+    private boolean isCode(final String result) {
+        // 나온 코드가 DB에 조회되는지?
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference myRef = database.child("user/");
 
+        myRef.orderByValue().addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                UserHelperClass userHelperClass = snapshot.getValue(UserHelperClass.class);
+                if(userHelperClass.getCode().equals(result)) {
+                    answer = true;
+                    //System.out.println("중복이다~~~");
+//                    System.out.println(userHelperClass.getName());
+//                    System.out.println("닥쵸");
+                }
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+        return answer;
     }
 
-    // 매개변수로 문자열을 받고 해당값을 DB에 중복검사.
-    private Boolean isDuplication(String str) {
-        Boolean result = true;
-
-
-
-
-        return result;
-    }
-
-    // 최댓값, 최솟값을 제시하면 해당 범위내의 값을 리턴.
+    // 최댓값, 최솟값을 제시하면 해당 범위내의 랜덤 코드 값을 리턴.
     private String randomCode() {
         // 코드는 3자리 알파벳, 4자리 숫자로 랜덤값.
         String result[] = new String[7];

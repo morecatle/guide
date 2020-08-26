@@ -46,11 +46,6 @@ public class LoginActivity extends AppCompatActivity {
         register = (TextView) findViewById(R.id.text_register);
         //Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 
-
-
-
-
-
         id.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
