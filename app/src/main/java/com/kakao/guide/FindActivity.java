@@ -1,6 +1,7 @@
 package com.kakao.guide;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +22,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +43,10 @@ public class FindActivity extends AppCompatActivity {
     //firebase 부분.
     private String verificationId;
     private FirebaseAuth mAuth; //Firebase 인증 객체.
+
+    // 파이어베이스 연결.
+    DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+    DatabaseReference myRef = database.child("user/");
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,6 +78,7 @@ public class FindActivity extends AppCompatActivity {
         //firebase 부분.
         mAuth = FirebaseAuth.getInstance();
 
+        // 인증방법 선택.
         image_phone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,6 +98,7 @@ public class FindActivity extends AppCompatActivity {
             }
         });
 
+        // 휴대폰인증 - 확인
         btn_sendPhone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -176,49 +188,60 @@ public class FindActivity extends AppCompatActivity {
         signInWithCredential(credential);
     }
 
+    // 인증번호 확인 후 활동.
     private void signInWithCredential(PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // 인증 성공. 다음 단계로.
-//                            Intent intent = new Intent(FindActivity.this, LoginActivity.class);
-//                            intent.putExtra("phone", number);
-//
-//                            startActivity(intent);
-                            select.setVisibility(View.GONE);
-                            email.setVisibility(View.VISIBLE);
-                            title.setText("이메일 인증 (1/2)");
-                            subTitle.setText("가입 시 등록했던 이메일을 입력해주세요.");
+                            // 결과창 띄우기.
+                            answer.setVisibility(View.GONE);
+                            result.setVisibility(View.VISIBLE);
+                            title.setText("조회 확인");
+                            subTitle.setText("인증 결과를 확인해주세요.");
 
-                            if(phone.getVisibility() == View.VISIBLE) {
-                                phone.setVisibility(View.GONE);
-                            } else if(answer.getVisibility() == View.VISIBLE) {
-                                answer.setVisibility(View.GONE);
-                            } else if(email.getVisibility() == View.VISIBLE) {
-                                email.setVisibility(View.GONE);
+
+                            // 결과창에 조회된 핸드폰 번호에 맞는 회원정보 출력하기.
+                            // 010형식으로 변환
+                            if(number.startsWith("+82")) {
+                                number = number.replace("+82","0");
                             }
+                            Log.d("change", number);
 
-
-
-                            /*
-                            type.startAnimation(fadeout);
-                            type.setVisibility(View.GONE);
-                            store.setVisibility(View.VISIBLE);
-                            store.startAnimation(fadein);
-
-                             */
+                            myRef.orderByValue().addChildEventListener(new ChildEventListener() {
+                                @Override
+                                public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                    Log.d("rere", snapshot.getValue(UserHelperClass.class).getPhone());
+                                    if(snapshot.getValue(UserHelperClass.class).getPhone().equals(number)) {
+                                        // 휴대폰이 DB에 있다면,
+                                        Toast.makeText(FindActivity.this, "인증되었습니다.", Toast.LENGTH_SHORT).show();
+                                        text_code.setText(snapshot.getValue(UserHelperClass.class).getCode());
+                                        text_pass.setText(snapshot.getValue(UserHelperClass.class).getPass());
+                                    } else {
+                                        // 휴대폰이 DB에 없다면 그대로 진행,
+                                        Toast.makeText(FindActivity.this, number+"로 조회되는 번호가 없습니다..", Toast.LENGTH_SHORT).show();
+                                        text_code.setText("X");
+                                        text_pass.setText("X");
+                                    }
+                                }
+                                @Override
+                                public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                }
+                                @Override
+                                public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                                }
+                                @Override
+                                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                }
+                            });
                         }else {
                             Toast.makeText(FindActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
                     }
                 });
     }
-
-    /////
-
-
-
-
 }

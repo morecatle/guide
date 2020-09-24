@@ -51,7 +51,7 @@
             <!--인증방법 선택-->
             <LinearLayout
                 android:id="@+id/layout_select"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -185,7 +185,7 @@
             <!--인증번호 입력-->
             <LinearLayout
                 android:id="@+id/layout_result"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:gravity="top"
                 android:orientation="vertical"
                 android:layout_marginTop="20dp"

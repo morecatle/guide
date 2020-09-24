@@ -89,6 +89,11 @@ public class RegisterActivity extends AppCompatActivity {
                     phone.setError("번호를 입력해주세요.");
                     phone.requestFocus();
                     return;
+                } else {
+//                    // 제대로 입력했다면, 국가번호로 변경.
+//                    if(number.startsWith("0")){
+//                        number = number.replace("0", "+82");
+//                    }
                 }
 
                 //넘어가는 부분.
