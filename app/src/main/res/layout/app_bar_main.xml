@@ -9,6 +9,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <androidx.appcompat.widget.Toolbar
@@ -22,12 +23,195 @@
 
     <include layout="@layout/content_main" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fab"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom|end"-->
+<!--        android:layout_margin="@dimen/fab_margin"-->
+<!--        app:srcCompat="@android:drawable/ic_dialog_email" />-->
+
+    <SlidingDrawer
+        android:id="@+id/slide"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:allowSingleTap="true"
+        android:animateOnClick="true"
+        android:bottomOffset="10dp"
+        android:content="@id/content"
+        android:handle="@id/handle"
+        android:orientation="vertical"
+        android:topOffset="100dp">
+<!--        <ImageView-->
+<!--            android:id="@+id/handle"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:src="@drawable/cat"/>-->
+        <LinearLayout
+            android:id="@+id/handle"
+            android:gravity="center"
+            android:background="#FFFFFFFF"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:orientation="vertical">
+            <ImageView
+                android:src="@drawable/handle"
+                android:layout_width="30dp"
+                android:layout_height="15dp"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FFFFFFFF"
+            android:orientation="vertical"
+            android:onClick="onSlidingDrawer">
+<!--탭 내용물.-->
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/layout_chat"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="채팅 씬입니다."/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/layout_lang_select"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <Button
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="음성"/>
+                <Button
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="문자"/>
+            </LinearLayout>
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/layout_lang_voice"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <Button
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="본인"/>
+                    <Button
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="영어"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:gravity="left"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/text_result"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="50dp"
+                        android:text="결과..."/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/layout_lang_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:gravity="left"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <EditText
+                        android:id="@+id/edit_langType"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:hint="입력하세요."/>
+                </LinearLayout>
+                <LinearLayout
+                    android:gravity="left"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/text_langResult"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="50dp"
+                        android:text="결과..."/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/layout_travel"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="여행 씬입니다."/>
+            </LinearLayout>
+        </LinearLayout>
+    </SlidingDrawer>
+    <LinearLayout
+        android:id="@+id/bottomButton"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        android:orientation="horizontal"
+        android:background="#FFFFFFFF"
+        android:layout_gravity="bottom"
+        android:onClick="onSlidingDrawer">
+        <Button
+            android:text="채팅"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_weight="1"
+            android:id="@+id/btn_chat"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <Button
+            android:text="번역"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_weight="1"
+            android:id="@+id/btn_lang"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <Button
+            android:text="여행"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_weight="1"
+            android:id="@+id/btn_travel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

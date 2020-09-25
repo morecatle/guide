@@ -15,6 +15,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.SlidingDrawer;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,7 +46,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -81,6 +83,13 @@ public class MainActivity extends AppCompatActivity
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
+    // 하단 메뉴.
+    SlidingDrawer drawer;
+    Button btn_chat, btn_lang, btn_travel;
+    String focus ="";
+
+    LinearLayout layout_chat, layout_lang_select, layout_lang_voice, layout_lang_text, layout_travel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,11 +98,109 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         // app_bar_main.xml
-        // 툴바
+        // 툴바   임시적으로 gone.
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // 우측하단 메세지버튼
+        // 하단 메뉴
+        drawer = (SlidingDrawer)findViewById(R.id.slide);
+        btn_chat = (Button)findViewById(R.id.btn_chat);
+        btn_lang = (Button)findViewById(R.id.btn_lang);
+        btn_travel = (Button)findViewById(R.id.btn_travel);
+        layout_chat = (LinearLayout)findViewById(R.id.layout_chat);
+        layout_lang_select = (LinearLayout)findViewById(R.id.layout_lang_select);
+        layout_lang_voice = (LinearLayout)findViewById(R.id.layout_lang_voice);
+        layout_lang_text = (LinearLayout)findViewById(R.id.layout_lang_text);
+        layout_travel = (LinearLayout)findViewById(R.id.layout_travel);
+
+
+        btn_chat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //drawer.animateClose();
+                // 드로워가 열려있는지?
+                if(drawer.isOpened()) {
+                    if(!focus.equals("채팅")) {
+                        // btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 활성화 아이콘으로 변경.
+                        // 씬 바꾸기.
+                        if(focus.equals("번역")) {
+                            layout_lang_select.setVisibility(View.GONE);
+                        } else if(focus.equals("여행")) {
+                            layout_travel.setVisibility(View.GONE);
+                        }
+                        layout_chat.setVisibility(View.VISIBLE);
+                        focus = "채팅";
+                    } else {
+                        //btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 비활성화 아이콘으로 변경.
+                        drawer.animateClose();
+                    }
+                } else {
+                    //btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 활성화 아이콘으로 변경.
+                    drawer.animateOpen();
+                    layout_chat.setVisibility(View.VISIBLE);
+                    focus = "채팅";
+                }
+            }
+        });
+
+        btn_lang.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 드로워가 열려있는지?
+                if(drawer.isOpened()) {
+                    if(!focus.equals("번역")) {
+                        // btn_chat.setBackgroundResource(R.drawable.cat); // 번역 활성화 아이콘으로 변경.
+                        // 씬 바꾸기.
+                        if(focus.equals("채팅")) {
+                            layout_chat.setVisibility(View.GONE);
+                        } else if(focus.equals("여행")) {
+                            layout_travel.setVisibility(View.GONE);
+                        }
+                        layout_lang_select.setVisibility(View.VISIBLE);
+                        focus = "번역";
+                    } else {
+                        //btn_chat.setBackgroundResource(R.drawable.cat); // 번역 비활성화 아이콘으로 변경.
+                        drawer.animateClose();
+                    }
+                } else {
+                    //btn_chat.setBackgroundResource(R.drawable.cat); // 번역 활성화 아이콘으로 변경.
+                    drawer.animateOpen();
+                    layout_lang_select.setVisibility(View.VISIBLE);
+                    focus = "번역";
+                }
+            }
+        });
+
+        btn_travel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 드로워가 열려있는지?
+                if(drawer.isOpened()) {
+                    if(!focus.equals("여행")) {
+                        // btn_chat.setBackgroundResource(R.drawable.cat); // 여행 활성화 아이콘으로 변경.
+                        // 씬 바꾸기.
+                        if(focus.equals("채팅")) {
+                            layout_chat.setVisibility(View.GONE);
+                        } else if(focus.equals("번역")) {
+                            layout_lang_select.setVisibility(View.GONE);
+                        }
+                        layout_travel.setVisibility(View.VISIBLE);
+                        focus = "여행";
+                    } else {
+                        //btn_chat.setBackgroundResource(R.drawable.cat); // 여행 비활성화 아이콘으로 변경.
+                        drawer.animateClose();
+                    }
+                } else {
+                    //btn_chat.setBackgroundResource(R.drawable.cat); // 여행 활성화 아이콘으로 변경.
+                    drawer.animateOpen();
+                    layout_travel.setVisibility(View.VISIBLE);
+                    focus = "여행";
+                }
+            }
+        });
+
+        // 우측하단 메세지버튼   /제거해도 무관.
+        /*
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +210,7 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+         */
 
         // activity_main.xml
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -462,5 +570,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
         }
+    }
+
+    public void onSlidingDrawer(View view) {
     }
 }
