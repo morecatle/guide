@@ -12,12 +12,17 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SlidingDrawer;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -48,6 +53,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.mannan.translateapi.Language;
+import com.mannan.translateapi.TranslateAPI;
 
 import java.io.IOException;
 import java.util.List;
@@ -89,6 +96,13 @@ public class MainActivity extends AppCompatActivity
     String focus ="";
 
     LinearLayout layout_chat, layout_lang_select, layout_lang_voice, layout_lang_text, layout_travel;
+    Button btn_choose_voice, btn_choose_text;
+    // 문자 번역 부분.
+    EditText editTest;
+    Button test;
+    TextView textView, text_input, text_output;
+    Boolean translate = false; // 0: input, 1: output;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,26 +126,39 @@ public class MainActivity extends AppCompatActivity
         layout_lang_voice = (LinearLayout)findViewById(R.id.layout_lang_voice);
         layout_lang_text = (LinearLayout)findViewById(R.id.layout_lang_text);
         layout_travel = (LinearLayout)findViewById(R.id.layout_travel);
+        btn_choose_voice = (Button)findViewById(R.id.btn_choose_voice);
+        btn_choose_text = (Button)findViewById(R.id.btn_choose_text);
+
+        // 문자 번역 부분.
+        editTest = (EditText)findViewById(R.id.editText);
+        test = (Button)findViewById(R.id.btn_test);
+        textView = (TextView)findViewById(R.id.textView);
+        text_input = (TextView)findViewById(R.id.text_input);
+        text_output = (TextView)findViewById(R.id.text_output);
+        registerForContextMenu(text_input);
+        registerForContextMenu(text_output);
 
 
+        // 하단 네비게이션 드로어 부분.////////////////////////////////////////////////////////////////
         btn_chat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //drawer.animateClose();
                 // 드로워가 열려있는지?
                 if(drawer.isOpened()) {
-                    if(!focus.equals("채팅")) {
-                        // btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 활성화 아이콘으로 변경.
-                        // 씬 바꾸기.
-                        if(focus.equals("번역")) {
-                            layout_lang_select.setVisibility(View.GONE);
-                        } else if(focus.equals("여행")) {
-                            layout_travel.setVisibility(View.GONE);
-                        }
+                    if(focus.equals("번역")) {
+                        layout_lang_select.setVisibility(View.GONE);
+                        layout_lang_voice.setVisibility(View.GONE);
+                        layout_lang_text.setVisibility(View.GONE);
+                        layout_chat.setVisibility(View.VISIBLE);
+                        focus = "채팅";
+                    } else if(focus.equals("여행")) {
+                        layout_travel.setVisibility(View.GONE);
                         layout_chat.setVisibility(View.VISIBLE);
                         focus = "채팅";
                     } else {
                         //btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 비활성화 아이콘으로 변경.
+                        layout_chat.setVisibility(View.GONE);
                         drawer.animateClose();
                     }
                 } else {
@@ -142,24 +169,24 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-
         btn_lang.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 드로워가 열려있는지?
                 if(drawer.isOpened()) {
-                    if(!focus.equals("번역")) {
-                        // btn_chat.setBackgroundResource(R.drawable.cat); // 번역 활성화 아이콘으로 변경.
-                        // 씬 바꾸기.
-                        if(focus.equals("채팅")) {
-                            layout_chat.setVisibility(View.GONE);
-                        } else if(focus.equals("여행")) {
-                            layout_travel.setVisibility(View.GONE);
-                        }
+                    if(focus.equals("채팅")) {
+                        layout_chat.setVisibility(View.GONE);
+                        layout_lang_select.setVisibility(View.VISIBLE);
+                        focus = "번역";
+                    } else if(focus.equals("여행")) {
+                        layout_travel.setVisibility(View.GONE);
                         layout_lang_select.setVisibility(View.VISIBLE);
                         focus = "번역";
                     } else {
                         //btn_chat.setBackgroundResource(R.drawable.cat); // 번역 비활성화 아이콘으로 변경.
+                        layout_lang_select.setVisibility(View.GONE);
+                        layout_lang_voice.setVisibility(View.GONE);
+                        layout_lang_text.setVisibility(View.GONE);
                         drawer.animateClose();
                     }
                 } else {
@@ -170,24 +197,24 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-
         btn_travel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 드로워가 열려있는지?
                 if(drawer.isOpened()) {
-                    if(!focus.equals("여행")) {
-                        // btn_chat.setBackgroundResource(R.drawable.cat); // 여행 활성화 아이콘으로 변경.
-                        // 씬 바꾸기.
-                        if(focus.equals("채팅")) {
-                            layout_chat.setVisibility(View.GONE);
-                        } else if(focus.equals("번역")) {
-                            layout_lang_select.setVisibility(View.GONE);
-                        }
+                    if(focus.equals("채팅")) {
+                        layout_chat.setVisibility(View.GONE);
+                        layout_travel.setVisibility(View.VISIBLE);
+                        focus = "여행";
+                    } else if(focus.equals("번역")) {
+                        layout_lang_select.setVisibility(View.GONE);
+                        layout_lang_voice.setVisibility(View.GONE);
+                        layout_lang_text.setVisibility(View.GONE);
                         layout_travel.setVisibility(View.VISIBLE);
                         focus = "여행";
                     } else {
                         //btn_chat.setBackgroundResource(R.drawable.cat); // 여행 비활성화 아이콘으로 변경.
+                        layout_travel.setVisibility(View.GONE);
                         drawer.animateClose();
                     }
                 } else {
@@ -198,6 +225,63 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        btn_choose_voice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        btn_choose_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                layout_lang_select.setVisibility(View.GONE);
+                layout_lang_text.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // 문자 번역
+        text_input.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                translate = false;
+                v.showContextMenu();
+            }
+        });
+        text_output.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                translate = true;
+                v.showContextMenu();
+            }
+        });
+        test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final TranslateAPI translateAPI = new TranslateAPI(
+                        getEnglish(text_input.getText().toString()),
+                        getEnglish(text_output.getText().toString()),
+                        editTest.getText().toString()
+                );
+
+                translateAPI.setTranslateListener(new TranslateAPI.TranslateListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        textView.setText(s);
+                    }
+
+                    @Override
+                    public void onFailure(String s) {
+                        System.out.print("번역 오류 발생: "+s);
+                    }
+                });
+            }
+        });
+
+
+
 
         // 우측하단 메세지버튼   /제거해도 무관.
         /*
@@ -573,5 +657,90 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onSlidingDrawer(View view) {
+    }
+
+    //문자 번역 부분.
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        MenuInflater menuInflater = getMenuInflater();
+        menu.setHeaderTitle("언어 선택");
+        menuInflater.inflate(R.menu.translate_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId())
+        {
+            case R.id.KOREAN:
+                if(translate) {
+                    text_output.setText("한국어");
+                } else {
+                    text_input.setText("한국어");
+                }
+                break;
+            case R.id.ENGLISH:
+                if(translate) {
+                    text_output.setText("영어");
+                } else {
+                    text_input.setText("영어");
+                }
+                break;
+            case R.id.CHINESE_SIMPLIFIED:
+                if(translate) {
+                    text_output.setText("중국어");
+                } else {
+                    text_input.setText("중국어");
+                }
+                break;
+            case R.id.CHINESE_TRADITIONAL:
+                if(translate) {
+                    text_output.setText("라틴어");
+                } else {
+                    text_input.setText("라틴어");
+                }
+                break;
+            case R.id.JAPANESE:
+                if(translate) {
+                    text_output.setText("일본어");
+                } else {
+                    text_input.setText("일본어");
+                }
+                break;
+            case R.id.RUSSIAN:
+                if(translate) {
+                    text_output.setText("러시아어");
+                } else {
+                    text_input.setText("러시아어");
+                }
+                break;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    private String getEnglish(String place) {
+        String temp = place;
+
+        if(temp.equals("한국어")) {
+            return Language.KOREAN;
+        }
+        else if(temp.equals("영어")) {
+            return Language.ENGLISH;
+        }
+        else if(temp.equals("중국어")) {
+            return Language.CHINESE;
+        }
+        else if(temp.equals("라틴어")) {
+            return Language.LATIN;
+        }
+        else if(temp.equals("일본어")) {
+            return Language.JAPANESE;
+        }
+        else if(temp.equals("러시아어")) {
+            return Language.RUSSIAN;
+        }
+        else
+            return null;
     }
 }
