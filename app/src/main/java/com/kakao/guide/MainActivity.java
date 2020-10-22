@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
@@ -98,9 +99,10 @@ public class MainActivity extends AppCompatActivity
     LinearLayout layout_chat, layout_lang_select, layout_lang_voice, layout_lang_text, layout_travel;
     Button btn_choose_voice, btn_choose_text;
     // 문자 번역 부분.
-    EditText editTest;
+    EditText editText;
     Button test;
     TextView textView, text_input, text_output;
+    ImageView image_change;
     Boolean translate = false; // 0: input, 1: output;
 
 
@@ -130,11 +132,12 @@ public class MainActivity extends AppCompatActivity
         btn_choose_text = (Button)findViewById(R.id.btn_choose_text);
 
         // 문자 번역 부분.
-        editTest = (EditText)findViewById(R.id.editText);
+        editText = (EditText)findViewById(R.id.editText);
         test = (Button)findViewById(R.id.btn_test);
         textView = (TextView)findViewById(R.id.textView);
         text_input = (TextView)findViewById(R.id.text_input);
         text_output = (TextView)findViewById(R.id.text_output);
+        image_change = (ImageView)findViewById(R.id.image_change);
         registerForContextMenu(text_input);
         registerForContextMenu(text_output);
 
@@ -257,13 +260,27 @@ public class MainActivity extends AppCompatActivity
                 v.showContextMenu();
             }
         });
+        image_change.setOnClickListener(new View.OnClickListener() {
+            String input="", output="";
+            @Override
+            public void onClick(View v) {
+                output = text_input.getText().toString();
+                input = text_output.getText().toString();
+                text_input.setText(input);
+                text_output.setText(output);
+                output = editText.getText().toString();
+                input = textView.getText().toString();
+                editText.setText(input);
+                textView.setText(output);
+            }
+        });
         test.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final TranslateAPI translateAPI = new TranslateAPI(
                         getEnglish(text_input.getText().toString()),
                         getEnglish(text_output.getText().toString()),
-                        editTest.getText().toString()
+                        editText.getText().toString()
                 );
 
                 translateAPI.setTranslateListener(new TranslateAPI.TranslateListener() {
