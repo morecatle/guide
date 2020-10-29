@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:id="@+id/tv_layout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tv_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="상대방"
+            android:textSize="20dp"
+            android:textStyle="bold"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tv_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="메시지 출력  "/>
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="입력시간"/>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/my_layout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:gravity="right"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/my_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="입력시간   "/>
+            <TextView
+                android:background="#FAED7D"
+                android:id="@+id/my_msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="메시지 출력"
+                android:textSize="20dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
+
+
+<!--
+holder.tv_msg = (TextView)convertView.findViewById(R.id.tv_content);
+            holder.tv_name = (TextView)convertView.findViewById(R.id.tv_id);
+            holder.tv_time = (TextView)convertView.findViewById(R.id.tv_time);
+            holder.my_msg = (TextView)convertView.findViewById(R.id.my_msg);
+            holder.my_time = (TextView)convertView.findViewById(R.id.my_time);
+
+
+-->

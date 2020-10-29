@@ -66,18 +66,72 @@
             android:background="#FFFFFFFF"
             android:orientation="vertical"
             android:onClick="onSlidingDrawer">
-<!--탭 내용물.-->
+<!--탭 내용물. 먼저 채팅부터. -->
             <LinearLayout
                 android:visibility="gone"
                 android:id="@+id/layout_chat"
-                android:gravity="center"
+                android:gravity="top"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="채팅 씬입니다."/>
+                <!--채팅 리스트-->
+                <LinearLayout
+                    android:id="@+id/layout_chatList"
+                    android:visibility="visible"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_weight="8"
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <ListView
+                            android:id="@+id/testing_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:dividerHeight="0dp"
+                            android:transcriptMode="alwaysScroll"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!--채팅 화면-->
+                <LinearLayout
+                    android:id="@+id/layout_chatView"
+                    android:visibility="gone"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_weight="8"
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <ListView
+                            android:id="@+id/testing_chatView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:dividerHeight="0dp"
+                            android:transcriptMode="alwaysScroll"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <EditText
+                            android:id="@+id/testing_edt"
+                            android:layout_weight="9"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+                        <Button
+                            android:id="@+id/testing_btn"
+                            android:layout_weight="1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:text="전송"/>
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout

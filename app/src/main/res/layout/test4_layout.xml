@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<!--    &lt;!&ndash;채팅 리스트&ndash;&gt;-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/layout_chatList"-->
+<!--        android:visibility="visible"-->
+<!--        android:orientation="vertical"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content">-->
+<!--        <LinearLayout-->
+<!--            android:layout_weight="8"-->
+<!--            android:orientation="vertical"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent">-->
+<!--            <ListView-->
+<!--                android:id="@+id/testing_list"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:dividerHeight="0dp"-->
+<!--                android:transcriptMode="alwaysScroll"/>-->
+<!--        </LinearLayout>-->
+<!--    </LinearLayout>-->
+
+<!--    &lt;!&ndash;채팅 화면&ndash;&gt;-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/layout_chatView"-->
+<!--        android:visibility="gone"-->
+<!--        android:orientation="vertical"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content">-->
+<!--        <LinearLayout-->
+<!--            android:layout_weight="8"-->
+<!--            android:orientation="vertical"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent">-->
+<!--            <ListView-->
+<!--                android:id="@+id/testing_chatView"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:dividerHeight="0dp"-->
+<!--                android:transcriptMode="alwaysScroll"/>-->
+<!--        </LinearLayout>-->
+<!--        <LinearLayout-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal">-->
+<!--            <EditText-->
+<!--                android:id="@+id/testing_edt"-->
+<!--                android:layout_weight="9"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"/>-->
+<!--            <Button-->
+<!--                android:id="@+id/testing_btn"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:text="전송"/>-->
+<!--        </LinearLayout>-->
+<!--    </LinearLayout>-->
+</LinearLayout>
