@@ -34,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -270,6 +271,7 @@ public class MainActivity extends AppCompatActivity
                             value.setId(listOther);
                             chat_list.add(value);
                             adapter.notifyDataSetChanged(); //데이터가 변경됐다고 알려주기.
+                            // 근데 굳이 리턴이 있어야 하나?
                             return;
                         }
                     }
@@ -334,6 +336,7 @@ public class MainActivity extends AppCompatActivity
                 layout_chatList.setVisibility(View.GONE);
                 layout_chatView.setVisibility(View.VISIBLE);
 
+
                 chat_myRef.addChildEventListener(new ChildEventListener() {
                     @Override
                     public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -395,7 +398,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-        
+
         btn_travel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -510,19 +513,45 @@ public class MainActivity extends AppCompatActivity
          */
 
         // activity_main.xml
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         // 네비게이션메뉴 내용물 정의.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow,
-                R.id.nav_tools, R.id.nav_share, R.id.nav_send)
+                R.id.nav_list, R.id.nav_profile, R.id.nav_schedule)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int position = item.getItemId();
+                Intent intent;
+                switch (position) {
+                    case R.id.nav_list:
+                        Toast.makeText(getApplicationContext(), "목록 선택", Toast.LENGTH_LONG).show();
+                        intent = new Intent(getApplicationContext(), UserListActivity.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.nav_profile:
+                        Toast.makeText(getApplicationContext(), "프로필 선택", Toast.LENGTH_LONG).show();
+                        intent = new Intent(getApplicationContext(), ScheduleActivity.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.nav_schedule:
+                        Toast.makeText(getApplicationContext(), "일정 선택", Toast.LENGTH_LONG).show();
+                        break;
+
+                }
+                // 닫아주기.
+                drawer.closeDrawer(GravityCompat.START);
+                return false;
+            }
+        });
 
 
         // 구글 맵.

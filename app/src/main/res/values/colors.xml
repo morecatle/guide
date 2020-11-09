@@ -4,4 +4,9 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="app">#EAF2FF</color>
+    <color name="scheduleON">#A5FF60</color>
+    <color name="scheduleOFF">#CECECE</color>
+    <color name="guide">#F7FF00</color>
+    <color name="man">#A6CFFF</color>
+    <color name="woman">#FFA6A6</color>
 </resources>

@@ -68,6 +68,7 @@
             android:onClick="onSlidingDrawer">
 <!--탭 내용물. 먼저 채팅부터. -->
             <LinearLayout
+                android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_chat"
                 android:gravity="top"
@@ -135,6 +136,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_lang_select"
                 android:layout_width="match_parent"
@@ -154,6 +156,7 @@
                     android:text="문자"/>
             </LinearLayout>
             <LinearLayout
+                android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_lang_voice"
                 android:layout_width="match_parent"
@@ -190,12 +193,12 @@
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
+                android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_lang_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_margin="20dp">
+                android:orientation="vertical">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
@@ -253,6 +256,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_travel"
                 android:gravity="center"
@@ -269,7 +273,7 @@
     <LinearLayout
         android:id="@+id/bottomButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:orientation="horizontal"
         android:background="#FFFFFFFF"
         android:layout_gravity="bottom"
