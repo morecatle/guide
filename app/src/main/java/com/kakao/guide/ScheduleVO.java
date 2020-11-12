@@ -52,4 +52,5 @@ public class ScheduleVO {
     public void setRoute(String route) {
         this.route = route;
     }
+
 }

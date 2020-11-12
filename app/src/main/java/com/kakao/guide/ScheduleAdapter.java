@@ -28,6 +28,9 @@ import java.util.Arrays;
 
 public class ScheduleAdapter extends BaseAdapter {
 
+    static String temp = "";
+
+
     private Context context;
     private int layout;
     public ArrayList<ScheduleVO> scheduleData;
@@ -157,6 +160,25 @@ public class ScheduleAdapter extends BaseAdapter {
         });
 
 
+        holder.image_schedule_write.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 사용중인 일정을 선택했을 경우.
+                if(ScheduleActivity.isUse.equals(holder.text_schedule_name.getText().toString())) {
+                    Log.d("testing", "현재 사용중인 씬입니다.");
+
+                    Intent intent = new Intent(context, ScheduleListActivity.class);
+
+                    intent.putExtra("state",holder.text_schedule_name.getText().toString());
+                    Log.d("testing", holder.text_schedule_name.getText().toString());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                    context.getApplicationContext().startActivity(intent);
+                }
+                // 아니면 메소드를 호출하는것도 괜찮.
+                //ScheduleActivity.move();
+            }
+        });
         return convertView;
     }
 

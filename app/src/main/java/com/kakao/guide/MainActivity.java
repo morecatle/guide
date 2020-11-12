@@ -140,12 +140,20 @@ public class MainActivity extends AppCompatActivity
     String other = "";
     //==============================================================================================
 
+    // 주소 넘겨받기.
+    Intent sendIntent;
+    String goLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+
+        // 주소 넘겨받기.
+        sendIntent = getIntent();
+        goLocation = sendIntent.getStringExtra("thisLocation");
 
         // app_bar_main.xml
         // 툴바   임시적으로 gone.
