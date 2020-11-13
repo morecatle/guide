@@ -143,6 +143,8 @@ public class MainActivity extends AppCompatActivity
     // 주소 넘겨받기.
     Intent sendIntent;
     String goLocation;
+    private static final int PLACE_PICKER_REQUEST =1;
+    Button btn_GoSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,6 +156,8 @@ public class MainActivity extends AppCompatActivity
         // 주소 넘겨받기.
         sendIntent = getIntent();
         goLocation = sendIntent.getStringExtra("thisLocation");
+        //btn_GoSearch = findViewById(R.id.btn_GoSearch);
+
 
         // app_bar_main.xml
         // 툴바   임시적으로 gone.
@@ -210,6 +214,23 @@ public class MainActivity extends AppCompatActivity
         final ChatAdapter adapterChat = new ChatAdapter(getApplicationContext(), R.layout.chat_item, chat_view, id);
         ((ListView) findViewById(R.id.testing_chatView)).setAdapter(adapterChat);
         //==========================================================================================
+
+//        btn_GoSearch.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+//                try {
+//                    Intent intent = intentBuilder.build(MainActivity.this);
+//                    startActivityForResult(intent,PLACE_PICKER_REQUEST);
+//                } catch (GooglePlayServicesRepairableException e) {
+//                    e.printStackTrace();
+//                } catch (GooglePlayServicesNotAvailableException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+
+
 
 
         // 하단 네비게이션 드로어 부분.////////////////////////////////////////////////////////////////

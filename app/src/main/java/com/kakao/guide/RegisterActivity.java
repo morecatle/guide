@@ -2,6 +2,7 @@ package com.kakao.guide;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -44,14 +45,15 @@ public class RegisterActivity extends AppCompatActivity {
     Intent intent;
 
     //firebase 부분.
-    private String verificationId;
-    private String phonenumber = "+821063462260";
-    private FirebaseAuth mAuth; //Firebase 인증 객체.
+    public String verificationId = null;
+    public String phonenumber = "+821063462260";
+    public FirebaseAuth mAuth; //Firebase 인증 객체.
+    String myPhone = "";
 
     // 파이어베이스 연결.
-    DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-    DatabaseReference myRef = database.child("user/");
-
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference("user");
+    //private static final String KEY_VERIFICATION_ID = "key_verification_id";
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,14 +70,14 @@ public class RegisterActivity extends AppCompatActivity {
         phone = (EditText) findViewById(R.id.edit_phone);
         fadein = AnimationUtils.loadAnimation(this, R.anim.fadein);
         fadeout = AnimationUtils.loadAnimation(this, R.anim.fadeout);
-
         text.startAnimation(fadein);
+
 
         //firebase 부분.
         mAuth = FirebaseAuth.getInstance();
         progressBar = (ProgressBar) findViewById(R.id.progressbar);
         edit_type = (EditText) findViewById(R.id.edit_type); // 인증번호.
-        //sendVerificationCode(phonenumber);
+
 
         // 휴대폰 인증번호 보내기 버튼.
         send.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // 입력값을 가져오되, 앞뒤 공백을 자른다.
                 number = phone.getText().toString().trim();
-
+                Log.d("DEBUG", myPhone);
                 // 휴대폰 입력이 비어있거나 적게 입력했을 때.
                 if(number.isEmpty() || number.length()<10) {
                     phone.setError("번호를 입력해주세요.");
@@ -106,7 +108,6 @@ public class RegisterActivity extends AppCompatActivity {
                 sendVerificationCode(number);
             }
         });
-
         // 인증번호 확인 버튼.
         sendOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,7 +120,7 @@ public class RegisterActivity extends AppCompatActivity {
                     edit_type.requestFocus();
                     return;
                 }
-
+                Log.d("checking", "인증번호 버튼 누름.");
                 //progressBar.setVisibility(View.VISIBLE);
                 verifyCode(code);
                 /*
@@ -134,7 +135,7 @@ public class RegisterActivity extends AppCompatActivity {
                 */
             }
         });
-
+        // 로그인 씬으로 이동하기.
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -143,28 +144,33 @@ public class RegisterActivity extends AppCompatActivity {
                 finish();
             }
         });
-
-
-
     }
+    // 6505553434
     private void checkUser(String number) {
         final String phone = number;
+        Log.d("checking", "DB에서 중복 조회 진입.");
+
         myRef.orderByValue().addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Log.d("checkLog", "조회된 코드: "+snapshot.getValue(UserHelperClass.class).getCode()+", 저장된 번호: "+snapshot.getValue(UserHelperClass.class).getPhone());
+                Log.d("checkLog", phone);
                 if(snapshot.getValue(UserHelperClass.class).getPhone().equals(phone)) {
+                    Log.d("checkLog", "번호가 일치합니다.");
                     // 휴대폰이 DB에 있다면,
                     Toast.makeText(RegisterActivity.this, "이미 인증된 번호입니다. 계정찾기로 이동합니다.", Toast.LENGTH_SHORT).show();
                     intent = new Intent(RegisterActivity.this, FindActivity.class);
                     startActivity(intent);
+                    finish();
                 } else {
+                    Log.d("checkLog", "번호가 불일치합니다.");
                     // 휴대폰이 DB에 없다면 그대로 진행,
                     Toast.makeText(RegisterActivity.this, "인증되었습니다.", Toast.LENGTH_SHORT).show();
                     intent = new Intent(RegisterActivity.this, Register2Activity.class);
                     intent.putExtra("phone", phone); // 결론은 010으로 넘어감.
                     startActivity(intent);
+                    finish();
                 }
-                finish();
             }
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -179,15 +185,20 @@ public class RegisterActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
-
+        Log.d("checkLog", "조회 끝");
     }
 
     private void verifyCode(String code){
+        Log.d("checking", "verifyCode 진입");
+
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
         signInWithCredential(credential);
+
+        Log.d("checking", "verifyCode 끝.");
     }
 
     private void signInWithCredential(PhoneAuthCredential credential) {
+        Log.d("checking", "signInWithCredential 진입");
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
@@ -199,7 +210,10 @@ public class RegisterActivity extends AppCompatActivity {
                             // 번호 010으로 시작하게 하기.
                             if(number.startsWith("+82")){
                                 number = number.replace("+82", "0");
+                            } else if(number.startsWith("+1")) {
+                                number = number.replace("+1", "");
                             }
+                            Log.d("checking", "인증 성공.");
                             checkUser(number);
 
 
@@ -210,11 +224,13 @@ public class RegisterActivity extends AppCompatActivity {
 //                            startActivity(intent);
 
                         }else {
+                            //Toast.makeText(RegisterActivity.this, "인증 실패.", Toast.LENGTH_SHORT).show();
                             Toast.makeText(RegisterActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
                             //Toast.makeText(RegisterActivity.this, "뻐큐", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
+        Log.d("checking", "signInWithCredential 끝.");
     }
 
     // Firebase가 사용자의 전화번호를 확인하도록 요청.
@@ -222,6 +238,7 @@ public class RegisterActivity extends AppCompatActivity {
         //String test = "01063462260";
 
         progressBar.setVisibility(View.VISIBLE);
+        Log.d("checking", "sendVerificationCode 시작.");
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 number,
                 60,
@@ -229,6 +246,7 @@ public class RegisterActivity extends AppCompatActivity {
                 TaskExecutors.MAIN_THREAD,
                 mCallBack
         );
+        Log.d("checking", "sendVerificationCode 끝.");
     }
 
     // PhoneAuthProvider.verifyPhoneNumber를 호출할 때 요청 결과를 처리하는 콜백함수 구현을 위해.
@@ -242,6 +260,8 @@ public class RegisterActivity extends AppCompatActivity {
                 @Override
                 public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
                     // SMS 문장내용을 자동으로 읽어오기.
+                    Log.d("checking", "문자가 성곡적으로 갔습니다.");
+                    Log.d("checking", String.valueOf(phoneAuthCredential));
                     String code = phoneAuthCredential.getSmsCode();
                     if (code != null) {
                         //progressBar.setVisibility(View.VISIBLE);
@@ -256,16 +276,23 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                     //Toast.makeText(RegisterActivity.this, "뻐큐", Toast.LENGTH_LONG).show();
                     //checkUser(number);
-
-
-
-
-
                     //Toast.makeText(RegisterActivity.this, "버그찾았지렁.", Toast.LENGTH_SHORT).show();
                 }
             };
 
 //    @Override
+//    protected void onSaveInstanceState(@NonNull Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putString(KEY_VERIFICATION_ID,verificationId);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        verificationId = savedInstanceState.getString(KEY_VERIFICATION_ID);
+//    }
+
+    //    @Override
 //    protected void onStart() {
 //        super.onStart();
 //

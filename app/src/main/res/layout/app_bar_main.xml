@@ -21,6 +21,21 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+
+<!--    <Button-->
+<!--        android:layout_gravity="top"-->
+<!--        android:id="@+id/btn_GoSearch"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="검색 가즈아"/>-->
+
+    <fragment
+        android:id="@+id/place_autocomplete_fragment1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+        />
+
     <include layout="@layout/content_main" />
 
 <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
@@ -91,7 +106,8 @@
                             android:id="@+id/testing_list"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:dividerHeight="0dp"
+                            android:dividerHeight="5dp"
+                            android:divider="#FFFFFF"
                             android:transcriptMode="alwaysScroll"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -112,7 +128,8 @@
                             android:id="@+id/testing_chatView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:dividerHeight="0dp"
+                            android:dividerHeight="5dp"
+                            android:divider="#FFFFFF"
                             android:transcriptMode="alwaysScroll"/>
                     </LinearLayout>
                     <LinearLayout

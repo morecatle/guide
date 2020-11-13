@@ -1,5 +1,6 @@
 package com.kakao.guide;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -46,7 +47,9 @@ public class FindActivity extends AppCompatActivity {
 
     // 파이어베이스 연결.
     DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-    DatabaseReference myRef = database.child("user/");
+    DatabaseReference myRef = database.child("user");
+
+    Intent intent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,20 +129,42 @@ public class FindActivity extends AppCompatActivity {
             }
         });
 
+        // 휴대폰인증 - 인증번호 확인
+        btn_isCorrect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String code = edit_answer.getText().toString().trim();
+
+                // 인증번호가 비었거나 6자 미만일때.
+                if (code.isEmpty() || code.length()<6) {
+                    edit_answer.setError("인증번호를 입력해주세요.");
+                    edit_answer.requestFocus();
+                    return;
+                }
+                Log.d("checking", "인증번호 버튼 누름.");
+                //progressBar.setVisibility(View.VISIBLE);
+                verifyCode(code);
+            }
+        });
+
         // 되돌아가기.
         text_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(phone.getVisibility() == View.VISIBLE) {
-                    phone.setVisibility(View.GONE);
-                } else if(answer.getVisibility() == View.VISIBLE) {
-                    answer.setVisibility(View.GONE);
-                } else if(email.getVisibility() == View.VISIBLE) {
-                    email.setVisibility(View.GONE);
-                }
-                select.setVisibility(View.VISIBLE);
-                title.setText("인증 방법 선택");
-                subTitle.setText("찾기 방법을 선택해주세요.");
+//                if(phone.getVisibility() == View.VISIBLE) {
+//                    phone.setVisibility(View.GONE);
+//                } else if(answer.getVisibility() == View.VISIBLE) {
+//                    answer.setVisibility(View.GONE);
+//                } else if(email.getVisibility() == View.VISIBLE) {
+//                    email.setVisibility(View.GONE);
+//                }
+//                select.setVisibility(View.VISIBLE);
+//                title.setText("인증 방법 선택");
+//                subTitle.setText("찾기 방법을 선택해주세요.");
+                intent = new Intent(FindActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+
             }
         });
     }
@@ -204,12 +229,15 @@ public class FindActivity extends AppCompatActivity {
 
                             // 결과창에 조회된 핸드폰 번호에 맞는 회원정보 출력하기.
                             // 010형식으로 변환
-                            if(number.startsWith("+82")) {
-                                number = number.replace("+82","0");
+                            if(number.startsWith("+82")){
+                                number = number.replace("+82", "0");
+                            } else if(number.startsWith("+1")) {
+                                number = number.replace("+1", "");
                             }
+
                             Log.d("change", number);
 
-                            myRef.orderByValue().addChildEventListener(new ChildEventListener() {
+                            myRef.addChildEventListener(new ChildEventListener() {
                                 @Override
                                 public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                                     Log.d("rere", snapshot.getValue(UserHelperClass.class).getPhone());
