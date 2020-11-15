@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:layout_margin="20dp"
+    android:background="@drawable/circle_list">
+    <LinearLayout
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center|left"
+        android:layout_weight="3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/text_main_scheduleAdd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="일정 주소"
+            android:textSize="15dp"/>
+        <TextView
+            android:id="@+id/text_main_scheduleName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="일정 이름"
+            android:textStyle="bold"
+            android:textSize="25dp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:gravity="center"
+        android:layout_marginRight="20dp"
+        android:layout_weight="8"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/text_main_scheduleGPS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00m"
+            android:textStyle="bold"
+            android:textSize="25dp"/>
+    </LinearLayout>
+</LinearLayout>

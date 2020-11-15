@@ -2,4 +2,7 @@
 <network-security-config>
     <!--Set application-wide security config using base-config tag.-->
     <base-config cleartextTrafficPermitted="true"/>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">apis.data.go.kr</domain>
+    </domain-config>
 </network-security-config>

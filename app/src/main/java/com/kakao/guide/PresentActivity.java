@@ -29,9 +29,11 @@ public class PresentActivity extends AppCompatActivity {
     FragmentPagerAdapter adapterViewPager;
     int count = 0;
     String myPhone = "";
+    String myCode = "";
     // 파이어베이스 연결.
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("user");
+    DatabaseReference schedule_myRef = database.getReference("travel");
 
     Intent intent;
 
@@ -117,10 +119,37 @@ public class PresentActivity extends AppCompatActivity {
                 Log.d("che", "조회된 번호"+snapshot.getValue(UserHelperClass.class).getPhone());
                 Log.d("che", "지금 내 번호"+myPhone);
                 if(myPhone.equals(snapshot.getValue(UserHelperClass.class).getPhone())) {
+                    myCode = snapshot.getValue(UserHelperClass.class).getCode();
                     intent = new Intent(PresentActivity.this, MainActivity.class);
                     startActivity(intent);
                     //Toast.makeText(PresentActivity.this, "자동 로그인 되었습니다.", Toast.LENGTH_SHORT).show();
-                    finish();
+                }
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+        schedule_myRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // 만약 현재 사용중인 일정에 내 코드가 있다 ==> 일정사용중인 것.
+                if (snapshot.getValue(ScheduleVO.class).getPeople().contains(myCode)) {
+                    if(snapshot.getValue(ScheduleVO.class).getVisible().equals("use")) {
+                        MainActivity.nowSchedule = snapshot.getValue(ScheduleVO.class).getName();
+                        Log.d("testing", "현재 사용중인 일정은 "+snapshot.getValue(ScheduleVO.class).getName());
+                        finish();
+                    }
+
                 }
             }
             @Override
@@ -148,7 +177,7 @@ public class PresentActivity extends AppCompatActivity {
             Log.v("DEBUG", "A"+ myPhone +"B");
 
             // 테스트용
-            //myPhone = "6505553434";
+            myPhone = "6505553434";
         }
     }
 

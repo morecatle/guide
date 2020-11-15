@@ -61,6 +61,7 @@ public class ScheduleActivity extends AppCompatActivity {
                 // 현재 사용중인 일정 저장.
                 if(snapshot.getValue(ScheduleVO.class).getVisible().equals("use")) {
                     isUse = snapshot.getValue(ScheduleVO.class).getName();
+                    MainActivity.nowSchedule = isUse;
                     Log.d("testing", "현재 사용중인 일정: "+isUse);
                 }
                 ScheduleVO value = snapshot.getValue(ScheduleVO.class); // 괄호 안 : 꺼낼 자료 형태
@@ -178,6 +179,10 @@ public class ScheduleActivity extends AppCompatActivity {
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // 수평 일정 탭을 불러오기 위한 작업.
+                Intent mySchedule = new Intent();
+                mySchedule.putExtra("mySchedule" , isUse);
+                setResult(RESULT_OK,mySchedule); //결과를 저장
                 finish();
             }
         });

@@ -5,12 +5,21 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -30,6 +39,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -40,7 +50,10 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -56,6 +69,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.ChildEventListener;
@@ -63,26 +82,52 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mannan.translateapi.Language;
 import com.mannan.translateapi.TranslateAPI;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback{
+        implements OnMapReadyCallback, TextToSpeech.OnInitListener, RecognitionListener {
 
     // content_main의 nav_host_fragment가 주 화면입니다.
 
     private AppBarConfiguration mAppBarConfiguration;
 
+    // 검색창
+    EditText edit_search;
+    Button btn_search;
+
+    // 수펼 일정 탭
+    static String nowSchedule = "";  // 현재 지정된 일정.
+    private RecyclerView listview;
+    private MainAdapter mainAadapter;
+
     // 구글 맵.
+    public String myCode = "TESTCODE123";
     private GoogleMap mMap;
     private Marker currentMarker = null;
     private static final String TAG = "googlemap_example";
@@ -112,12 +157,7 @@ public class MainActivity extends AppCompatActivity
 
     LinearLayout layout_chat, layout_lang_select, layout_lang_voice, layout_lang_text, layout_travel;
     Button btn_choose_voice, btn_choose_text;
-    // 문자 번역 부분.
-    EditText editText;
-    Button test;
-    TextView textView, text_input, text_output;
-    ImageView image_change;
-    Boolean translate = false; // 0: input, 1: output;
+
 
     // 채팅 탭 부분.=================================================================================
 
@@ -146,12 +186,58 @@ public class MainActivity extends AppCompatActivity
     private static final int PLACE_PICKER_REQUEST =1;
     Button btn_GoSearch;
 
+    // 번역 탭
+    private TextToSpeech tts;
+    private Button btn_lang_mic,text_lang_input, btn_lang_speak, text_lang_output;
+    private TextView text_lang_resultInput, text_lang_resultOutput;
+    ArrayList<String> text;
+    SpeechRecognizer speech;
+    private Intent recognizerIntent;
+    private final int RESULT_SPEECH = 1000;
+    // 문자 번역 부분.
+    EditText editText;
+    Button test;
+    TextView textView, text_input, text_output;
+    ImageView image_change;
+    Boolean translate = false; // 0: input, 1: output;
+
+    // 여행 탭
+    public final static String PHARM_URL1 = "http://apis.data.go.kr/1262000/CountryBasicService/getCountryBasicList";
+    public final static String PHARM_URL2 = "http://apis.data.go.kr/1262000/AccidentService/getAccidentInfo";
+    public final static String KEY = "HR8TyxL0w4ktjhNK3sGgYDehPyfUNFiQmInLBxO4Oacj0WiY4aDSIGvjVLgMdt0SnrgXg6YGKMTlryaLcEFL0w%3D%3D";
+    TextView text_country_list, text_country_continent, text_country_name, text_country_engName;
+    String news;
+    ImageView Image_country_image;
+    Bitmap bitmap;
+    // 지오코드 관련 테스트위치
+    LatLng myGPS = new LatLng(35.647570, 138.079449);  // 일본 임.
+    String CnameforGPS = "";                                // 이 위치의 국가이름.
+    Geocoder geocoder = new Geocoder(this);
+    List<Address> list = null;
+    String continent = "";          // 대륙
+    String countryEnName = "";      // 국가 영문이름.
+    String countryCode = "";        // 국가코드.
+
+    // DB 관련.
+    FirebaseDatabase database;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+
+        // 수평 일정 탭
+        init();
+
+        // 구글 맵
+        edit_search = (EditText)findViewById(R.id.edit_search);
+        btn_search = (Button)findViewById(R.id.btn_search);
+        Places.initialize(getApplicationContext(), "AIzaSyDNIAhBp404ll7_GbssgGGep7Dq50LGbq8");
+
+        // 번역
+        tts = new TextToSpeech(this, this);
 
         // 주소 넘겨받기.
         sendIntent = getIntent();
@@ -186,6 +272,17 @@ public class MainActivity extends AppCompatActivity
         image_change = (ImageView)findViewById(R.id.image_change);
         registerForContextMenu(text_input);
         registerForContextMenu(text_output);
+        btn_lang_mic = (Button)findViewById(R.id.btn_lang_mic);
+        text_lang_input = (Button)findViewById(R.id.text_lang_input);
+        btn_lang_speak = (Button)findViewById(R.id.btn_lang_speak);
+        text_lang_output = (Button)findViewById(R.id.text_lang_output);
+        text_lang_resultInput = (TextView)findViewById(R.id.text_lang_resultInput);
+        text_lang_resultOutput = (TextView)findViewById(R.id.text_lang_resultOutput);
+        registerForContextMenu(text_lang_input);
+        registerForContextMenu(text_lang_output);
+        // 음성 인식.
+        speech = SpeechRecognizer.createSpeechRecognizer(this);
+        speech.setRecognitionListener(this);
 
         // 채팅 탭 부분.=============================================================================
         chat_listView = findViewById(R.id.testing_list);
@@ -196,13 +293,27 @@ public class MainActivity extends AppCompatActivity
         testing_button = (Button)findViewById(R.id.testing_btn);
         testing_chatView = (ListView)findViewById(R.id.testing_chatView);
 
+        // 여행 탭 부분.=============================================================================
+        text_country_list = (TextView)findViewById(R.id.text_country_list);
+        text_country_continent = (TextView)findViewById(R.id.text_country_continent);
+        text_country_name = (TextView)findViewById(R.id.text_country_name);
+        text_country_engName = (TextView)findViewById(R.id.text_country_engName);
+        Image_country_image = (ImageView) findViewById(R.id.Image_country_flag);
+        // layout에 내 위치에 따른 국가이름 지정..
+        text_country_name.setText(countryNameForGPS(myGPS));
+        CnameforGPS = countryNameForGPS(myGPS);
+        // 국가이름에 따른 조회. 비동기로 실행됨.
+        String url = PHARM_URL1 +"?ServiceKey="+KEY+"&countryName="+CnameforGPS;
+        OpenAPI findCode = new OpenAPI(url);
+        findCode.execute();
+        //==========================================================================================
+
         // DB 연결.
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance();
         final DatabaseReference chat_myRef = database.getReference("message");
 
         id = "test";
         other = "test3";
-
 
         // 채팅 리스트에 넣을 아답터를 정의.
         final ChatListAdapter adapter = new ChatListAdapter(getApplicationContext(), R.layout.chatlist_layout, chat_list, id);
@@ -230,7 +341,45 @@ public class MainActivity extends AppCompatActivity
 //            }
 //        });
 
+        // 검색창
+        edit_search.setFocusable(false);
+        edit_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<Place.Field> fieldList = Arrays.asList(Place.Field.ADDRESS,Place.Field.LAT_LNG,Place.Field.NAME);
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY,fieldList).build(MainActivity.this);
+                startActivityForResult(intent, 100);
+                mFusedLocationClient.removeLocationUpdates(locationCallback);   // GPS수신 정지.
+            }
+        });
+        btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 검색창에서 텍스트를 가져온다
+                String searchText = edit_search.getText().toString();
 
+                Geocoder geocoder = new Geocoder(getBaseContext());
+                List<Address> addresses = null;
+
+                try {
+                    addresses = geocoder.getFromLocationName(searchText, 3);
+                    if (addresses != null && !addresses.equals(" ")) {
+                        search(addresses);
+                    }
+                } catch(Exception e) {
+
+                }
+            }
+        });
+        // 위치 갱신
+        // GPS수신
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            }
+        });
 
 
         // 하단 네비게이션 드로어 부분.////////////////////////////////////////////////////////////////
@@ -458,10 +607,12 @@ public class MainActivity extends AppCompatActivity
         });
         ////////////////////////////////////////////////////////////////////////////////////////////
 
+        // 번역
         btn_choose_voice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                layout_lang_select.setVisibility(View.GONE);
+                layout_lang_voice.setVisibility(View.VISIBLE);
             }
         });
 
@@ -470,6 +621,67 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 layout_lang_select.setVisibility(View.GONE);
                 layout_lang_text.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // 음성 인식 버튼.
+        btn_lang_mic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                //recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "ko-KR"); //언어지정입니다.
+                switch(text_lang_input.getText().toString())
+                {
+                    case "한국어":
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                        break;
+                    case "영어":
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
+                        break;
+                    case "중국어":
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh(cmn-Hans-CN)");
+                        break;
+                    case "라틴어":
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "it-IT");
+                        break;
+                    case "일본어":
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ja-JP");
+                        break;
+                    case "러시아어":
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU");
+                        break;
+                }
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+                recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);   //검색을 말한 결과를 보여주는 갯수
+                startActivityForResult(recognizerIntent, RESULT_SPEECH);
+                //text_speakME.setText(""+text);
+            }
+        });
+
+        // 음성 출력 버튼.
+        btn_lang_speak.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onClick(View v) {
+                speakOut();
+            }
+        });
+
+        // 입력언어 변경.
+        text_lang_input.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                translate = false;
+                v.showContextMenu();
+            }
+        });
+        // 출력언어 변경.
+        text_lang_output.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                translate = true;
+                v.showContextMenu();
             }
         });
 
@@ -526,8 +738,6 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-
-
         // 우측하단 메세지버튼   /제거해도 무관.
         /*
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -541,6 +751,7 @@ public class MainActivity extends AppCompatActivity
         });
          */
 
+        // 네비게이션 부분.===========
         // activity_main.xml
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -625,6 +836,122 @@ public class MainActivity extends AppCompatActivity
                 || super.onSupportNavigateUp();
     }
 
+    // 검색창
+    // 구글맵 주소 검색 메서드
+    protected void search(List<Address> addresses) {
+        Address address = addresses.get(0);
+        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+        String addressText = String.format(
+                "%s, %s",
+                address.getMaxAddressLineIndex() > 0 ? address
+                        .getAddressLine(0) : " ", address.getFeatureName());
+
+        // 좌표찍기.
+//        test_result.setVisibility(View.VISIBLE);
+//        test_result.setText("Latitude" + address.getLatitude() + "Longitude" + address.getLongitude() + "\n" + addressText);
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title(addressText);
+
+        mMap.clear();
+        mMap.addMarker(markerOptions);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+    }
+
+    // 수평 일정 탭 관련.
+    private void init() {
+        database = FirebaseDatabase.getInstance();
+        DatabaseReference schedule_myRef = database.getReference("route");
+
+        listview = findViewById(R.id.main_listview);
+        listview.setVisibility(View.VISIBLE);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        listview.setLayoutManager(layoutManager);;
+
+        final ArrayList<String> scheduleMainVO = new ArrayList<>();
+
+        schedule_myRef.child("이집트여행").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                if(snapshot.getKey().equals("line")) {
+                    // 우선순위
+                    MainAdapter.line = snapshot.getValue().toString();
+                } else {
+//                    scheduleList_list.add(snapshot.getKey()+"="+snapshot.getValue().toString());
+//                    adapter.notifyDataSetChanged(); //데이터가 변경됐다고 알려주기.
+                    scheduleMainVO.add(snapshot.getKey()+"="+snapshot.getValue());
+                }
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+        schedule_myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mainAadapter = new MainAdapter(getApplicationContext(), scheduleMainVO, onClickItem);
+                listview.setAdapter(mainAadapter);
+
+                MyListDecoration decoration = new MyListDecoration();
+                listview.addItemDecoration(decoration);
+
+                // 아이템 선택 시.
+                mainAadapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View v, int position) {
+                        // text_position.setText(adapter.itemList.get(position));
+                        Log.d("this", mainAadapter.itemList.get(position));
+
+                        // 일정 이름 지정.
+                        String[] split = mainAadapter.itemList.get(position).split("=");
+                        String key = split[0];
+                        String value = split[1];
+                        String[] split2 = value.split(",");
+                        String mapL = split2[0];
+                        String mapR = split2[1];
+
+                        LatLng latLng = new LatLng(Float.parseFloat(mapL), Float.parseFloat(mapR));
+
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        markerOptions.title(key);
+
+                        mMap.clear();
+                        mMap.addMarker(markerOptions);
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                    }
+                });
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+
+    }
+
+    private View.OnClickListener onClickItem = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String str = (String) v.getTag();
+            Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
+        }
+    };
+
     // ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ
     // 구글 맵.
     @Override
@@ -696,27 +1023,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    // 현재 위치 반환.
-    LocationCallback locationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            List<Location> locationList = locationResult.getLocations();
-            if (locationList.size() > 0) {
-                location = locationList.get(locationList.size() - 1);
-                //location = locationList.get(0);
-                currentPosition
-                        = new LatLng(location.getLatitude(), location.getLongitude());
-                String markerTitle = getCurrentAddress(currentPosition);                            // 주소.
-                String markerSnippet = "위도:" + String.valueOf(location.getLatitude())              // 위도 + 경도.
-                        + " 경도:" + String.valueOf(location.getLongitude());
-                Log.d(TAG, "onLocationResult : " + markerSnippet);
-                //현재 위치에 마커 생성하고 이동
-                setCurrentLocation(location, markerTitle, markerSnippet);
-                mCurrentLocatiion = location;
-            }
-        }
-    };
+
 
     // 위치 업데이트.
     private void startLocationUpdates() {
@@ -735,11 +1042,52 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
                 return;
             }
+            // 업데이트 시작.
             Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates");
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper()); // 주소 업데이트.(속도, 마커정보(위치),
             if (checkPermission())
                 mMap.setMyLocationEnabled(true);                                                    // 지도에 파란점과 현위치 찾기 버튼 출력.
         }
+    }
+
+    // 현재 위치 반환.
+    LocationCallback locationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            List<Location> locationList = locationResult.getLocations();
+            if (locationList.size() > 0) {
+                location = locationList.get(locationList.size() - 1);
+                //location = locationList.get(0);
+                currentPosition
+                        = new LatLng(location.getLatitude(), location.getLongitude());
+                String markerTitle = getCurrentAddress(currentPosition);                            // 주소.
+                String markerSnippet = "위도:" + String.valueOf(location.getLatitude())              // 위도 + 경도.
+                        + " 경도:" + String.valueOf(location.getLongitude());
+                Log.d(TAG, "onLocationResult : " + markerSnippet);
+                //현재 위치에 마커 생성하고 이동
+                setCurrentLocation(location, markerTitle, markerSnippet);
+                mCurrentLocatiion = location;
+
+                // DB에 GPS정보 저장.
+                DatabaseReference map_myRef = database.getReference("user");
+                map_myRef.child(myCode).child("gps").setValue(location.getLatitude()+","+location.getLongitude());
+            }
+        }
+    };
+
+    //여기부터는 런타임 퍼미션 처리을 위한 메소드들
+    private boolean checkPermission() {
+        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
+                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED   ) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -794,6 +1142,8 @@ public class MainActivity extends AppCompatActivity
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
+
+    // 카메라 이동과 마커 조준.
     public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
         if (currentMarker != null) currentMarker.remove();
         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
@@ -829,19 +1179,7 @@ public class MainActivity extends AppCompatActivity
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
         mMap.moveCamera(cameraUpdate);
     }
-    //여기부터는 런타임 퍼미션 처리을 위한 메소드들
-    private boolean checkPermission() {
-        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION);
 
-        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED   ) {
-            return true;
-        }
-        return false;
-    }
 
     /*
      * ActivityCompat.requestPermissions를 사용한 퍼미션 요청의 결과를 리턴받는 메소드입니다.
@@ -917,9 +1255,29 @@ public class MainActivity extends AppCompatActivity
         builder.create().show();
     }
 
+    public void onSlidingDrawer(View view) {
+    }
+
+    // 다시 이 엑티비티로 돌아올 때 사용.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 100 && resultCode == RESULT_OK) {
+            // 성공했을 때.
+            Place place = Autocomplete.getPlaceFromIntent(data);
+            // 주소 넣기.
+            edit_search.setText(place.getAddress());
+            //test_result.setText(String.format("지역 이름: $s  ",place.getName())+String.valueOf(place.getLatLng()));
+        }else if(resultCode == AutocompleteActivity.RESULT_ERROR) {
+            // 에러발생 시.
+            Status status = Autocomplete.getStatusFromIntent(data);
+            Toast.makeText(getApplicationContext(),status.getStatusMessage(),Toast.LENGTH_SHORT).show();
+            Log.d("testing", status.getStatusMessage());
+        }
+        if (resultCode == RESULT_OK) {
+            String sendText = data.getStringExtra("mySchedule");
+            init();
+        }
         switch (requestCode) {
             case GPS_ENABLE_REQUEST_CODE:
                 //사용자가 GPS 활성 시켰는지 검사
@@ -931,13 +1289,75 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 break;
+            case RESULT_SPEECH : {
+                if (resultCode == RESULT_OK && null != data) {
+                    text = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    for(int i = 0; i < text.size() ; i++){
+                        Log.e("GoogleActivity", "onActivityResult text : " + text.get(i));
+                        text_lang_resultInput.setText(text.get(i));
+                        //text_lang_resultOutput.setText(text.get(i));
+                    }
+                    // 음성 번역.
+                    final TranslateAPI translateAPI = new TranslateAPI(
+                            getEnglish(text_lang_input.getText().toString()),
+                            getEnglish(text_lang_output.getText().toString()),
+                            text_lang_resultInput.getText().toString()
+                    );
+                    translateAPI.setTranslateListener(new TranslateAPI.TranslateListener() {
+                        @Override
+                        public void onSuccess(String s) {
+                            text_lang_resultOutput.setText(s);
+                        }
+                        @Override
+                        public void onFailure(String s) {
+                            System.out.print("번역 오류 발생: "+s);
+                        }
+                    });
+                }
+                break;
+            }
         }
     }
 
-    public void onSlidingDrawer(View view) {
+    // 번역관련 메소드.==============================================================================
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void speakOut() {
+        //tts.setLanguage(Locale.ENGLISH);
+        switch(text_lang_output.getText().toString())
+        {
+            case "한국어":
+                tts.setLanguage(Locale.KOREAN);
+                break;
+            case "영어":
+                tts.setLanguage(Locale.ENGLISH);
+                break;
+            case "중국어":
+                tts.setLanguage(Locale.CHINESE);
+                break;
+            case "라틴어":
+                tts.setLanguage(Locale.ITALIAN);
+                break;
+            case "일본어":
+                tts.setLanguage(Locale.JAPANESE);
+                break;
+            case "러시아어":
+                tts.setLanguage(Locale.ENGLISH);
+                break;
+        }
+        CharSequence text = text_lang_resultOutput.getText();
+        tts.setPitch((float) 0.8);  // 톤.
+        tts.setSpeechRate((float) 0.8); // 읽는 속도.
+        tts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"id1");
     }
-
-    //문자 번역 부분.
+    @Override
+    public void onDestroy() {
+        if (tts != null)  {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -946,57 +1366,121 @@ public class MainActivity extends AppCompatActivity
         menu.setHeaderTitle("언어 선택");
         menuInflater.inflate(R.menu.translate_menu, menu);
     }
-
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId())
-        {
-            case R.id.KOREAN:
-                if(translate) {
-                    text_output.setText("한국어");
-                } else {
-                    text_input.setText("한국어");
-                }
-                break;
-            case R.id.ENGLISH:
-                if(translate) {
-                    text_output.setText("영어");
-                } else {
-                    text_input.setText("영어");
-                }
-                break;
-            case R.id.CHINESE_SIMPLIFIED:
-                if(translate) {
-                    text_output.setText("중국어");
-                } else {
-                    text_input.setText("중국어");
-                }
-                break;
-            case R.id.CHINESE_TRADITIONAL:
-                if(translate) {
-                    text_output.setText("라틴어");
-                } else {
-                    text_input.setText("라틴어");
-                }
-                break;
-            case R.id.JAPANESE:
-                if(translate) {
-                    text_output.setText("일본어");
-                } else {
-                    text_input.setText("일본어");
-                }
-                break;
-            case R.id.RUSSIAN:
-                if(translate) {
-                    text_output.setText("러시아어");
-                } else {
-                    text_input.setText("러시아어");
-                }
-                break;
+        if(layout_lang_voice.getVisibility()==View.VISIBLE) {
+            switch(item.getItemId())
+            {
+                case R.id.KOREAN:
+                    if(translate) {
+                        text_lang_output.setText("한국어");
+                    } else {
+                        text_lang_input.setText("한국어");
+                    }
+                    break;
+                case R.id.ENGLISH:
+                    if(translate) {
+                        text_lang_output.setText("영어");
+                    } else {
+                        text_lang_input.setText("영어");
+                    }
+                    break;
+                case R.id.CHINESE_SIMPLIFIED:
+                    if(translate) {
+                        text_lang_output.setText("중국어");
+                    } else {
+                        text_lang_input.setText("중국어");
+                    }
+                    break;
+                case R.id.CHINESE_TRADITIONAL:
+                    if(translate) {
+                        text_lang_output.setText("라틴어");
+                    } else {
+                        text_lang_input.setText("라틴어");
+                    }
+                    break;
+                case R.id.JAPANESE:
+                    if(translate) {
+                        text_lang_output.setText("일본어");
+                    } else {
+                        text_lang_input.setText("일본어");
+                    }
+                    break;
+                case R.id.RUSSIAN:
+                    if(translate) {
+                        text_lang_output.setText("러시아어");
+                    } else {
+                        text_lang_input.setText("러시아어");
+                    }
+                    break;
+            }
+            if(translate==true) {
+                // 음성 번역.
+                final TranslateAPI translateAPI = new TranslateAPI(
+                        getEnglish(text_lang_input.getText().toString()),
+                        getEnglish(text_lang_output.getText().toString()),
+                        text_lang_resultInput.getText().toString()
+                );
+                translateAPI.setTranslateListener(new TranslateAPI.TranslateListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        text_lang_resultOutput.setText(s);
+                    }
+                    @Override
+                    public void onFailure(String s) {
+                        System.out.print("번역 오류 발생: "+s);
+                    }
+                });
+            }
+        } else if(layout_lang_text.getVisibility()==View.VISIBLE) {
+            switch(item.getItemId())
+            {
+                case R.id.KOREAN:
+                    if(translate) {
+                        text_output.setText("한국어");
+                    } else {
+                        text_input.setText("한국어");
+                    }
+                    break;
+                case R.id.ENGLISH:
+                    if(translate) {
+                        text_output.setText("영어");
+                    } else {
+                        text_input.setText("영어");
+                    }
+                    break;
+                case R.id.CHINESE_SIMPLIFIED:
+                    if(translate) {
+                        text_output.setText("중국어");
+                    } else {
+                        text_input.setText("중국어");
+                    }
+                    break;
+                case R.id.CHINESE_TRADITIONAL:
+                    if(translate) {
+                        text_output.setText("라틴어");
+                    } else {
+                        text_input.setText("라틴어");
+                    }
+                    break;
+                case R.id.JAPANESE:
+                    if(translate) {
+                        text_output.setText("일본어");
+                    } else {
+                        text_input.setText("일본어");
+                    }
+                    break;
+                case R.id.RUSSIAN:
+                    if(translate) {
+                        text_output.setText("러시아어");
+                    } else {
+                        text_input.setText("러시아어");
+                    }
+                    break;
+            }
         }
         return super.onContextItemSelected(item);
     }
-
     private String getEnglish(String place) {
         String temp = place;
 
@@ -1020,5 +1504,243 @@ public class MainActivity extends AppCompatActivity
         }
         else
             return null;
+    }
+    @Override
+    public void onReadyForSpeech(Bundle params) {
+    }
+    @Override
+    public void onBeginningOfSpeech() {
+    }
+    @Override
+    public void onRmsChanged(float rmsdB) {
+    }
+    @Override
+    public void onBufferReceived(byte[] buffer) {
+    }
+    @Override
+    public void onEndOfSpeech() {
+    }
+    @Override
+    public void onError(int error) {
+        String message;
+        switch (error) {
+            case SpeechRecognizer.ERROR_AUDIO:
+                message = "오디오 에러";
+                break;
+            case SpeechRecognizer.ERROR_CLIENT:
+                message = "클라이언트 에러";
+                break;
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                message = "퍼미션없음";
+                break;
+            case SpeechRecognizer.ERROR_NETWORK:
+                message = "네트워크 에러";
+                break;
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                message = "네트웍 타임아웃";
+                break;
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                message = "찾을수 없음";;
+                break;
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                message = "바쁘대";
+                break;
+            case SpeechRecognizer.ERROR_SERVER:
+                message = "서버이상";;
+                break;
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                message = "말하는 시간초과";
+                break;
+            default:
+                message = "알수없음";
+                break;
+        }
+        Log.e("GoogleActivity", "SPEECH ERROR : " + message);
+    }
+    @Override
+    public void onResults(Bundle results) {
+        ArrayList<String> matches = results
+                .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+        for(int i = 0; i < matches.size() ; i++){
+            Log.e("GoogleActivity", "onResults text : " + matches.get(i));
+        }
+    }
+    @Override
+    public void onPartialResults(Bundle partialResults) {
+    }
+    @Override
+    public void onEvent(int eventType, Bundle params) {
+    }
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS)  {
+            int result = tts.setLanguage(Locale.ENGLISH);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+                btn_lang_speak.setEnabled(true);
+                //speakOut();
+            }
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+    }
+
+    // 여행관련 메소드.==============================================================================
+    // 좌표에 따른 해당위치 국가이름 반환.
+    public String countryNameForGPS(LatLng gps) {
+        String country = "none";
+        LatLng location = gps;
+
+        try {
+            list = geocoder.getFromLocation(location.latitude, location.longitude,10);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            Log.e("test", "입출력 오류");
+        }
+        if (list != null) {
+            if (list.size()==0) {
+                // 정보조회된 거 없음.
+            } else {
+                // 조회된 국가이름 반환.
+                country = list.get(0).getCountryName();
+            }
+        }
+        return country;
+    }
+
+    // 국가정보 of 공공데이터
+    public class OpenAPI  extends AsyncTask<Void, Void, String> {
+        private String url;
+
+        public OpenAPI(String url) {
+            this.url = url;
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = null;
+            try {
+                dBuilder = dbFactoty.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            }
+            Document doc = null;
+
+
+            // 1. 국가이름 조회 2. 국가사건사고정보 조회 구분.
+            if(url.contains("getCountryBasicList")) {
+                try {
+                    doc = dBuilder.parse(url);
+                } catch (IOException | SAXException e) {
+                    e.printStackTrace();
+                    Log.e("errooooor", "hi!!!");
+                }
+                // root tag
+                doc.getDocumentElement().normalize();
+                System.out.println("Root element: " + doc.getDocumentElement().getNodeName()); // Root element: result
+                // 파싱할 tag
+                NodeList nList = doc.getElementsByTagName("item");
+                for(int temp = 0; temp < nList.getLength(); temp++){
+                    Node nNode = nList.item(temp);
+                    if(nNode.getNodeType() == Node.ELEMENT_NODE){
+                        // 해당 태그별로 정보 분리 가능.
+                        Element eElement = (Element) nNode;
+                        Log.d("OPEN_API","국가코드  : " + getTagValue("id", eElement));
+                        //imgUrl
+                        countryCode = getTagValue("id", eElement);
+                        continent = getTagValue("continent", eElement);
+                        countryEnName = getTagValue("countryEnName", eElement);
+                        bitmap = getImagefromURL(getTagValue("imgUrl", eElement));
+                    }	// for end
+                }	// if end
+            }else if(url.contains("getAccidentInfo")){
+                try {
+                    doc = dBuilder.parse(url);
+                } catch (IOException | SAXException e) {
+                    e.printStackTrace();
+                    Log.e("errooooor", "hi!!!");
+                }
+                // root tag
+                doc.getDocumentElement().normalize();
+                System.out.println("Root element: " + doc.getDocumentElement().getNodeName()); // Root element: result
+                // 파싱할 tag
+                NodeList nList = doc.getElementsByTagName("item");
+                for(int temp = 0; temp < nList.getLength(); temp++){
+                    Node nNode = nList.item(temp);
+                    if(nNode.getNodeType() == Node.ELEMENT_NODE){
+                        // 해당 태그별로 정보 분리 가능.
+                        Element eElement = (Element) nNode;
+                        Log.d("OPEN_API","국가이름  : " + getTagValue("news", eElement));
+                        //imgUrl
+                        news = getTagValue("news", eElement);
+//                    Log.d("OPEN_API","미세먼지  : " + getTagValue("pm10Value", eElement));
+//                    Log.d("OPEN_API","초미세먼지 : " + getTagValue("pm25Value", eElement));
+                    }	// for end
+                }	// if end
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            // 결과.
+            if(url.contains("getCountryBasicList")) {
+                String url2 = PHARM_URL2 +"?ServiceKey="+KEY+"&id="+countryCode;
+                OpenAPI findAccident = new OpenAPI(url2);
+                findAccident.execute();
+                Log.d("OPEN_API", "안녕"+countryCode);
+                Image_country_image.setImageBitmap(bitmap);
+                text_country_continent.setText(continent);
+                text_country_engName.setText(countryEnName);
+            }else if(url.contains("getAccidentInfo")) {
+                news = Html.fromHtml(news).toString();
+                text_country_list.setText(news);
+            }
+        }
+    }
+
+    private String getTagValue(String tag, Element eElement) {
+        NodeList nlList = eElement.getElementsByTagName(tag).item(0).getChildNodes();
+        Node nValue = (Node) nlList.item(0);
+        if(nValue == null)
+            return null;
+        return nValue.getNodeValue();
+    }
+
+
+    public Bitmap getImagefromURL(final String photoURL){
+        if ( photoURL == null) return null;
+        try {
+            URL url = new URL(photoURL);
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            httpURLConnection.setReadTimeout(3000);
+            httpURLConnection.setConnectTimeout(3000);
+            httpURLConnection.setDoInput(true);
+            httpURLConnection.setRequestMethod("GET");
+            httpURLConnection.setUseCaches(false);
+            httpURLConnection.connect();
+            int responseStatusCode = httpURLConnection.getResponseCode();
+            InputStream inputStream;
+            if (responseStatusCode == HttpURLConnection.HTTP_OK) {
+                inputStream = httpURLConnection.getInputStream();
+            }
+            else
+                return null;
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+            Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
+            bufferedInputStream.close();
+            httpURLConnection.disconnect();
+            return  bitmap;
+        } catch (Exception e) {
+            Log.d("TAG", e.toString());
+        }
+        return null;
     }
 }

@@ -172,6 +172,7 @@
                     android:layout_height="match_parent"
                     android:text="문자"/>
             </LinearLayout>
+            <!--음성번역-->
             <LinearLayout
                 android:layout_marginBottom="60dp"
                 android:visibility="gone"
@@ -180,36 +181,132 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
                 <LinearLayout
+                    android:layout_margin="15dp"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
-                    <Button
+                    <LinearLayout
+                        android:layout_marginRight="5dp"
                         android:layout_weight="1"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:text="본인"/>
-                    <Button
+                        android:orientation="vertical"
+                        android:background="#E8E8E8">
+                        <LinearLayout
+                            android:gravity="center"
+                            android:layout_weight="3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:background="#B9B9B9">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="입력 언어"
+                                android:textStyle="bold"
+                                android:textSize="20dp"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:gravity="center"
+                            android:layout_weight="6"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+                            <Button
+                                android:id="@+id/btn_lang_mic"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/mic"/>
+                            <Button
+                                android:layout_marginTop="20dp"
+                                android:id="@+id/text_lang_input"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="한국어"
+                                android:textSize="15dp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_marginLeft="5dp"
                         android:layout_weight="1"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:text="영어"/>
+                        android:orientation="vertical"
+                        android:background="#E8E8E8">
+                        <LinearLayout
+                            android:gravity="center"
+                            android:layout_weight="3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:background="#B9B9B9">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="출력 언어"
+                                android:textStyle="bold"
+                                android:textSize="20dp"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:gravity="center"
+                            android:layout_weight="6"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+                            <Button
+                                android:id="@+id/btn_lang_speak"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/volume_up"/>
+                            <Button
+                                android:layout_marginTop="20dp"
+                                android:id="@+id/text_lang_output"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="영어"
+                                android:textSize="15dp"/>
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
                 <LinearLayout
-                    android:gravity="left"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginBottom="15dp"
+                    android:padding="10dp"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
-                    <TextView
-                        android:id="@+id/text_result"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="50dp"
-                        android:text="결과..."/>
+                    android:orientation="horizontal"
+                    android:background="#E8E8E8">
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/text_lang_resultInput"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="인식 결과"/>
+                            <TextView
+                                android:id="@+id/text_lang_resultOutput"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="번역 결과"
+                                android:textStyle="bold"
+                                android:textSize="35dp"/>
+                        </LinearLayout>
+                    </ScrollView>
                 </LinearLayout>
+
             </LinearLayout>
+            <!--음성번역-->
             <LinearLayout
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_lang_text"
@@ -251,10 +348,10 @@
                     android:background="#707070"/>
                 <EditText
                     android:layout_weight="1"
-                    android:background="@null"
+                    android:background="#E8E8E8"
                     android:id="@+id/editText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
                 <Button
                     android:layout_marginTop="10dp"
                     android:layout_marginBottom="10dp"
@@ -262,17 +359,21 @@
                     android:text="번역하기"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-
                 <TextView
+                    android:background="#E8E8E8"
                     android:layout_weight="1"
                     android:id="@+id/textView"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="left"
-                    android:text="결과"/>
+                    android:text="결과"
+                    android:textSize="20dp"/>
             </LinearLayout>
-
+            <!--여행-->
             <LinearLayout
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_travel"
@@ -280,10 +381,77 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="여행 씬입니다."/>
+                <LinearLayout
+                    android:layout_weight="5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:background="#E8E8E8">
+                    <ImageView
+                        android:layout_margin="10dp"
+                        android:layout_weight="1"
+                        android:id="@+id/Image_country_flag"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                    <LinearLayout
+                        android:layout_margin="10dp"
+                        android:gravity="center"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                        <TextView
+                            android:gravity="center"
+                            android:id="@+id/text_country_continent"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="대륙"
+                            android:textSize="18dp"
+                            />
+                        <TextView
+                            android:gravity="center"
+                            android:id="@+id/text_country_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="국가이름"
+                            android:textSize="25dp"
+                            android:textStyle="bold"
+                            android:textColor="#000000"/>
+                        <TextView
+                            android:gravity="center"
+                            android:id="@+id/text_country_engName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="국가이름"
+                            android:textSize="15dp" />
+                    </LinearLayout>
+                </LinearLayout>
+                <ScrollView
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#E8E8E8">
+                    <LinearLayout
+                        android:layout_margin="15dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_marginBottom="5dp"
+                            android:gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="외교부에서 제공한 국가정보입니다."
+                            android:textStyle="bold"
+                            android:background="#D5D5D5"/>
+                        <TextView
+                            android:id="@+id/text_country_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="국가정보"/>
+                    </LinearLayout>
+                </ScrollView>
             </LinearLayout>
         </LinearLayout>
     </SlidingDrawer>
