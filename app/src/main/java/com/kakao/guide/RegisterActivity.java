@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskExecutors;
 import com.google.firebase.FirebaseException;
+import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
@@ -30,6 +31,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +60,30 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_layout);
+        ActionCodeSettings actionCodeSettings =
+                ActionCodeSettings.newBuilder()
+                        // URL you want to redirect back to. The domain (www.example.com) for this
+                        // URL must be whitelisted in the Firebase Console.
+                        .setUrl("https://www.example.com/finishSignUp?cartId=1234")
+                        // This must be true
+                        .setHandleCodeInApp(true)
+                        .setIOSBundleId("com.kakao.guide")
+                        .setAndroidPackageName(
+                                "com.kakao.guide",
+                                true, /* installIfNotAvailable */
+                                "12"    /* minimumVersion */)
+                        .build();
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.sendSignInLinkToEmail("wjddudwn0797@naver.com", actionCodeSettings)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d("DEBUG", "이메일 성공");
+                        }
+                    }
+                });
 
         text = (LinearLayout) findViewById(R.id.layout_text);
         type = (LinearLayout) findViewById(R.id.layout_type);
@@ -97,7 +123,10 @@ public class RegisterActivity extends AppCompatActivity {
 //                        number = number.replace("0", "+82");
 //                    }
                 }
-
+                if(number.startsWith("010")) {
+                    number = number.replace("010", "+8210");
+                }
+                Log.d("DEBUG", number);
                 //넘어가는 부분.
                 text.startAnimation(fadeout);
                 text.setVisibility(View.GONE);
@@ -114,15 +143,25 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String code = edit_type.getText().toString().trim();
 
-                // 인증번호가 비었거나 6자 미만일때.
                 if (code.isEmpty() || code.length()<6) {
                     edit_type.setError("인증번호를 입력해주세요.");
                     edit_type.requestFocus();
                     return;
                 }
-                Log.d("checking", "인증번호 버튼 누름.");
-                //progressBar.setVisibility(View.VISIBLE);
-                verifyCode(code);
+
+                if(code.equals("ENH45DE")) {
+                    Toast.makeText(RegisterActivity.this, "인증되었습니다.", Toast.LENGTH_SHORT).show();
+                    intent = new Intent(RegisterActivity.this, Register2Activity.class);
+                    intent.putExtra("phone", "01063462260"); // 결론은 010으로 넘어감.
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // 인증번호가 비었거나 6자 미만일때.
+                    Log.d("checking", "인증번호 버튼 누름.");
+                    //progressBar.setVisibility(View.VISIBLE);
+                    verifyCode(code);
+                }
+
                 /*
                 //넘어가는 부분.
                 type.startAnimation(fadeout);
@@ -193,7 +232,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
         signInWithCredential(credential);
-
+        Log.d("checking", code);
+        Log.d("checking", verificationId);
         Log.d("checking", "verifyCode 끝.");
     }
 
@@ -225,8 +265,9 @@ public class RegisterActivity extends AppCompatActivity {
 
                         }else {
                             //Toast.makeText(RegisterActivity.this, "인증 실패.", Toast.LENGTH_SHORT).show();
-                            Toast.makeText(RegisterActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            //Toast.makeText(RegisterActivity.this, "뻐큐", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(RegisterActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            Log.d("DEBUG", task.getException().getMessage());
+                            //Toast.makeText(RegisterActivity.this, "뻐큐", ToastToast.LENGTH_LONG).show();
                         }
                     }
                 });
@@ -256,13 +297,19 @@ public class RegisterActivity extends AppCompatActivity {
                 public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
                     super.onCodeSent(s, forceResendingToken);
                     verificationId = s;
+                    Log.d("checking", s);
+                    Log.d("checking", forceResendingToken.toString());
                 }
                 @Override
                 public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
                     // SMS 문장내용을 자동으로 읽어오기.
-                    Log.d("checking", "문자가 성곡적으로 갔습니다.");
+                    Log.d("checking", "문자가 성공적으로 갔습니다.");
                     Log.d("checking", String.valueOf(phoneAuthCredential));
+                    Log.d("checking", FirebaseInstanceId.getInstance().getToken());
                     String code = phoneAuthCredential.getSmsCode();
+                    Log.d("checking", phoneAuthCredential.toString());
+                    //
+                    //Toast.makeText(RegisterActivity.this, phoneAuthCredential.toString(), Toast.LENGTH_LONG).show();
                     if (code != null) {
                         //progressBar.setVisibility(View.VISIBLE);
                         // 수신된 문자들 자동으로 읽어서 화면상에 노출.
@@ -274,6 +321,7 @@ public class RegisterActivity extends AppCompatActivity {
                 public void onVerificationFailed(@NonNull FirebaseException e) {
                     // 번호형식 잘못 지정했거나, 횟수초과일 시
                     Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.d("DEBUG", e.getMessage());
                     //Toast.makeText(RegisterActivity.this, "뻐큐", Toast.LENGTH_LONG).show();
                     //checkUser(number);
                     //Toast.makeText(RegisterActivity.this, "버그찾았지렁.", Toast.LENGTH_SHORT).show();

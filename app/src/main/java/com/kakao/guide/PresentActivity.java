@@ -3,10 +3,14 @@ package com.kakao.guide;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -28,12 +32,14 @@ import me.relex.circleindicator.CircleIndicator;
 public class PresentActivity extends AppCompatActivity {
     FragmentPagerAdapter adapterViewPager;
     int count = 0;
-    String myPhone = "";
-    String myCode = "";
+    String myPhone = "01063462260";
+    String myCode = "ORF7623";
+
     // 파이어베이스 연결.
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("user");
     DatabaseReference schedule_myRef = database.getReference("travel");
+    String people = "";
 
     Intent intent;
 
@@ -41,6 +47,13 @@ public class PresentActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.present_layout);
+
+        // 상단바 색상 변경.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(Color.parseColor("#CFD4FF"));
+        }
 
         // 자동 로그인: 속도는 느리지만 일단 구현.
         // 휴대폰 번호 수신.
@@ -54,9 +67,8 @@ public class PresentActivity extends AppCompatActivity {
         CircleIndicator indicator = (CircleIndicator) findViewById(R.id.indicator);
         indicator.setViewPager(vpPager);
 
-
-        // 화면 넘김.
-        intent = new Intent(getApplicationContext(), RegisterActivity.class);
+        // 화면 넘김 미리 저장.
+        //intent = new Intent(getApplicationContext(), RegisterActivity.class);
 
         final Button start = (Button) findViewById(R.id.start); //뷰페이지 마지막에 노출될 '시작하기'
         //final TextView next = (TextView) findViewById(R.id.next); //건너뛰기
@@ -99,6 +111,7 @@ public class PresentActivity extends AppCompatActivity {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                intent = new Intent(getApplicationContext(), RegisterActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -121,7 +134,10 @@ public class PresentActivity extends AppCompatActivity {
                 if(myPhone.equals(snapshot.getValue(UserHelperClass.class).getPhone())) {
                     myCode = snapshot.getValue(UserHelperClass.class).getCode();
                     intent = new Intent(PresentActivity.this, MainActivity.class);
-                    startActivity(intent);
+                    intent.putExtra("myLocation", snapshot.getValue(UserHelperClass.class).getGps());
+                    intent.putExtra("myName", snapshot.getValue(UserHelperClass.class).getName());
+                    intent.putExtra("myCode", snapshot.getValue(UserHelperClass.class).getCode());
+
                     //Toast.makeText(PresentActivity.this, "자동 로그인 되었습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -144,10 +160,20 @@ public class PresentActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 // 만약 현재 사용중인 일정에 내 코드가 있다 ==> 일정사용중인 것.
                 if (snapshot.getValue(ScheduleVO.class).getPeople().contains(myCode)) {
+                    Log.d("testing", "현재 사용중인 일정은 ");
                     if(snapshot.getValue(ScheduleVO.class).getVisible().equals("use")) {
                         MainActivity.nowSchedule = snapshot.getValue(ScheduleVO.class).getName();
                         Log.d("testing", "현재 사용중인 일정은 "+snapshot.getValue(ScheduleVO.class).getName());
-                        finish();
+                        Log.d("testing", "현재 사용중인 일정은 "+snapshot.getValue(ScheduleVO.class).getPeople());
+
+                        //intent = new Intent(PresentActivity.this, MainActivity.class);
+                        if(intent!=null) {
+                            intent.putExtra("people", snapshot.getValue(ScheduleVO.class).getPeople());
+                            setResult(123123, intent);
+                            startActivity(intent);
+                            finish();
+                        }
+
                     }
 
                 }
@@ -177,7 +203,10 @@ public class PresentActivity extends AppCompatActivity {
             Log.v("DEBUG", "A"+ myPhone +"B");
 
             // 테스트용
-            myPhone = "6505553434";
+//            if(myPhone.startsWith("+82")) {
+//                myPhone = myPhone.replace("+82", "0");
+//            }
+            myPhone = "01063462260";
         }
     }
 

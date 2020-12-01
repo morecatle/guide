@@ -8,6 +8,8 @@
     android:layout_height="match_parent"
     android:background="@color/app">
 
+
+
     <androidx.viewpager.widget.ViewPager
         android:layout_weight="3"
         android:id="@+id/vpPager"
@@ -29,7 +31,6 @@
         android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
         <Button
             android:id="@+id/start"
             android:visibility="invisible"

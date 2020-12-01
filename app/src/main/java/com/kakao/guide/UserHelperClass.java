@@ -15,6 +15,17 @@ public class UserHelperClass {
         this.pass = pass;
         this.mail = mail;
         this.phone = phone;
+        this.gps = gps;
+    }
+
+    public UserHelperClass(String code, String name, String gender, String pass, String mail, String phone, String gps) {
+        this.code = code;
+        this.name = name;
+        this.gender = gender;
+        this.pass = pass;
+        this.mail = mail;
+        this.phone = phone;
+        this.gps = gps;
     }
 
     public UserHelperClass(String code, String name, String gender, String phone, String battery, String pass, String mail, String gps) {

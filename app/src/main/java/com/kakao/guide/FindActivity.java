@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -32,8 +34,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.concurrent.TimeUnit;
 
 public class FindActivity extends AppCompatActivity {
+    Animation fadein;
     TextView title, subTitle, text_back, text_code, text_pass;
-    LinearLayout select, phone, email, answer, result;
+    LinearLayout select, phone, email, answer, result, first;
     ImageView image_phone, image_email;
     EditText edit_phone, edit_email, edit_answer;
     Button btn_sendPhone, btn_sendEmail, btn_isCorrect;
@@ -55,7 +58,7 @@ public class FindActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.find_layout);
-
+        first = (LinearLayout)findViewById(R.id.layout_text);
         title = (TextView)findViewById(R.id.text_title);            // 타이틀 텍스트
         subTitle = (TextView)findViewById(R.id.text_subTitle);      // 서브타이틀 텍스트
         text_back = (TextView)findViewById(R.id.text_back);         // '돌아가기' 텍스트
@@ -77,6 +80,8 @@ public class FindActivity extends AppCompatActivity {
 //        line = (View)findViewById(R.id.view_line);
 //        fadein = AnimationUtils.loadAnimation(this, R.anim.fadein);     // 서서히 나타나기
 //        fadeout = AnimationUtils.loadAnimation(this, R.anim.fadeout);   // 서서히 사라지기
+        fadein = AnimationUtils.loadAnimation(this, R.anim.fadein);
+        first.startAnimation(fadein);
 
         //firebase 부분.
         mAuth = FirebaseAuth.getInstance();

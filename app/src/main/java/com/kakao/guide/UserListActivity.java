@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class UserListActivity extends AppCompatActivity {
-    static String code = "TESTCODE123";   // 현재 유저 코드.
+    static String code = "ORF7623";   // 현재 유저 코드.
     String temp = "";
     String travelName = ""; // 삭제를 위한 현재일정 저장문자열.
 
@@ -205,13 +205,6 @@ public class UserListActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-
-
-
-
-
-
 
 
 

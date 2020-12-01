@@ -2,6 +2,7 @@ package com.kakao.guide;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -11,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,22 +23,46 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class Test7Activity extends AppCompatActivity {
+public class Test7Activity extends AppCompatActivity implements OnMapReadyCallback {
     private RecyclerView listview;
     private MainAdapter adapter;
     TextView text_position;
-
+    ScheduleVO s;
     // 파이어베이스 연결.
     FirebaseDatabase rootNode;
     DatabaseReference reference;
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference reference2 = database.getReference("travel");
     //Context context = getApplicationContext();
+
+    Button putDB;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test7_layout);
         text_position = (TextView)findViewById(R.id.text_position);
 
+        putDB = (Button)findViewById(R.id.putDB);
+        //reference2 = rootNode.getReference("route");
+
         init();
+
+        putDB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rootNode = FirebaseDatabase.getInstance();
+//                reference = rootNode.getReference("user");
+//
+//                UserHelperClass helperClass = new UserHelperClass("DGEDCC54", "김길동","남자", "415121", "how@naver.com", "01088742245","35.151952,126.876622");
+//                //reference.child("SFEGSD555").child("gps").setValue("35.141400,126.876272");
+//                reference.child("DGEDCC54").setValue(helperClass);
+
+                s = new ScheduleVO("제주도 여행", "ORF7623","none", "ORF7623", "");
+                reference2.child("제주도 여행").setValue(s);
+
+            }
+        });
     }
 
     private void init() {
@@ -105,4 +132,8 @@ public class Test7Activity extends AppCompatActivity {
         }
     };
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
+    }
 }

@@ -39,8 +39,14 @@
             android:layout_height="50dp"
             android:orientation="horizontal"
             android:background="@drawable/circle_list">
-            <EditText
+            <ImageView
+                android:id="@+id/image_nav_open"
                 android:layout_marginLeft="10dp"
+                android:layout_weight="3"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/menu"/>
+            <EditText
                 android:id="@+id/edit_search"
                 android:layout_weight="50"
                 android:layout_width="match_parent"

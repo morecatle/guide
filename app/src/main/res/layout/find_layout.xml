@@ -66,7 +66,7 @@
                         android:id="@+id/image_phone"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        android:src="@drawable/cat"/>
+                        android:src="@drawable/phone"/>
                     <TextView
                         android:layout_marginTop="10dp"
                         android:gravity="center"
@@ -85,7 +85,7 @@
                         android:id="@+id/image_email"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        android:src="@drawable/cat"/>
+                        android:src="@drawable/mail"/>
                     <TextView
                         android:layout_marginTop="10dp"
                         android:gravity="center"
@@ -141,7 +141,7 @@
                     android:background="@drawable/white_edittext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="휴대폰 번호 입력"/>
+                    android:hint="이메일 입력"/>
                 <Button
                     android:id="@+id/btn_sendEmail"
                     android:layout_marginBottom="15dp"

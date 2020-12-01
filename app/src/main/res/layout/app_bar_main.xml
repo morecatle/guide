@@ -83,6 +83,9 @@
             android:onClick="onSlidingDrawer">
 <!--탭 내용물. 먼저 채팅부터. -->
             <LinearLayout
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginLeft="15dp"
                 android:layout_marginBottom="60dp"
                 android:visibility="gone"
                 android:id="@+id/layout_chat"
@@ -116,26 +119,29 @@
                 <LinearLayout
                     android:id="@+id/layout_chatView"
                     android:visibility="gone"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginLeft="15dp"
                     android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="match_parent">
                     <LinearLayout
-                        android:layout_weight="8"
+                        android:layout_weight="1"
                         android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
                         <ListView
                             android:id="@+id/testing_chatView"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:dividerHeight="5dp"
                             android:divider="#FFFFFF"
                             android:transcriptMode="alwaysScroll"/>
                     </LinearLayout>
                     <LinearLayout
-                        android:layout_weight="1"
+                        android:layout_weight="10"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:orientation="horizontal">
                         <EditText
                             android:id="@+id/testing_edt"
@@ -456,37 +462,39 @@
         </LinearLayout>
     </SlidingDrawer>
     <LinearLayout
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:padding="10dp"
         android:id="@+id/bottomButton"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:orientation="horizontal"
-        android:background="#FFFFFFFF"
         android:layout_gravity="bottom"
         android:onClick="onSlidingDrawer">
         <Button
-            android:text="채팅"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_weight="1"
             android:id="@+id/btn_chat"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:background="@drawable/chat"
+            android:layout_width="1dp"
+            android:layout_height="30dp"/>
         <Button
-            android:text="번역"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_weight="1"
             android:id="@+id/btn_lang"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:background="@drawable/translate"
+            android:layout_width="1dp"
+            android:layout_height="30dp"/>
         <Button
-            android:text="여행"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_weight="1"
             android:id="@+id/btn_travel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:background="@drawable/earth"
+            android:layout_width="1dp"
+            android:layout_height="30dp"/>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

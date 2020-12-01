@@ -69,6 +69,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
@@ -83,6 +85,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.mannan.translateapi.Language;
 import com.mannan.translateapi.TranslateAPI;
 
@@ -105,6 +109,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -117,6 +123,12 @@ public class MainActivity extends AppCompatActivity
 
     private AppBarConfiguration mAppBarConfiguration;
 
+    // 타이머
+    TextView timeText;
+    TimerTask timerTask;
+    Timer timer = new Timer();
+    ArrayList<String> DBLocation = new ArrayList<>();
+
     // 검색창
     EditText edit_search;
     Button btn_search;
@@ -127,7 +139,9 @@ public class MainActivity extends AppCompatActivity
     private MainAdapter mainAadapter;
 
     // 구글 맵.
-    public String myCode = "TESTCODE123";
+    String myLat = "";
+    String myLng = "";
+    public String myCode = "ORF7623";
     private GoogleMap mMap;
     private Marker currentMarker = null;
     private static final String TAG = "googlemap_example";
@@ -150,6 +164,11 @@ public class MainActivity extends AppCompatActivity
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
+    // 측면 네비게이션 부분.
+    TextView text_nav_code, text_nav_name;
+    String nav_code, nav_name;
+    ImageView image_nav_open;
+
     // 하단 메뉴.
     SlidingDrawer drawer;
     Button btn_chat, btn_lang, btn_travel;
@@ -157,7 +176,6 @@ public class MainActivity extends AppCompatActivity
 
     LinearLayout layout_chat, layout_lang_select, layout_lang_voice, layout_lang_text, layout_travel;
     Button btn_choose_voice, btn_choose_text;
-
 
     // 채팅 탭 부분.=================================================================================
 
@@ -217,9 +235,11 @@ public class MainActivity extends AppCompatActivity
     String continent = "";          // 대륙
     String countryEnName = "";      // 국가 영문이름.
     String countryCode = "";        // 국가코드.
+    String thisPeople = "";         // 받아오는 현재여행자 리스트.
 
     // DB 관련.
-    FirebaseDatabase database;
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference location_myRef = database.getReference("user");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -227,6 +247,41 @@ public class MainActivity extends AppCompatActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+
+        // 푸쉬 알람
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("FCM Log", "getInstanceId failed", task.getException());
+                            return;
+                        }
+                        String token = task.getResult().getToken();
+                        Log.d("FCM Log", "FCM 토큰: " + token);
+                        Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // 토큰 생성 확인.
+//        FirebaseMessaging.getInstance().getToken()
+//                .addOnCompleteListener(new OnCompleteListener<String>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<String> task) {
+//                        if (!task.isSuccessful()) {
+//                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+//                            return;
+//                        }
+//
+//                        // Get new FCM registration token
+//                        String token = task.getResult();
+//
+//                        // Log and toast
+////                        String msg = getString(R.string.msg_token_fmt, token);
+//                        Log.d(TAG, token);
+//                        Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
+//                    }
+//                });
 
         // 수평 일정 탭
         init();
@@ -242,6 +297,26 @@ public class MainActivity extends AppCompatActivity
         // 주소 넘겨받기.
         sendIntent = getIntent();
         goLocation = sendIntent.getStringExtra("thisLocation");
+        if(sendIntent.getStringExtra("people")!=null) {
+            thisPeople = sendIntent.getStringExtra("people");
+            Log.d("아시발", thisPeople);
+        } else {
+            thisPeople += myCode;   // 없으면 나만 추가
+        }
+        // 내 주소 넘겨받기.
+        if(sendIntent.getStringExtra("myLocation")!=null) {
+            String[] split = sendIntent.getStringExtra("myLocation").split(",");
+            myLat = split[0];
+            myLng = split[1];
+        }else {
+            myLat = "0";
+            myLng = "0";
+        }
+        if(sendIntent.getStringExtra("myCode")!=null&&sendIntent.getStringExtra("myName")!=null) {
+            nav_code =sendIntent.getStringExtra("myCode");
+            nav_name =sendIntent.getStringExtra("myName");
+        }
+        Log.d("timerCheck", thisPeople);
         //btn_GoSearch = findViewById(R.id.btn_GoSearch);
 
 
@@ -312,7 +387,7 @@ public class MainActivity extends AppCompatActivity
         database = FirebaseDatabase.getInstance();
         final DatabaseReference chat_myRef = database.getReference("message");
 
-        id = "test";
+        id = "ORF7623";
         other = "test3";
 
         // 채팅 리스트에 넣을 아답터를 정의.
@@ -393,21 +468,28 @@ public class MainActivity extends AppCompatActivity
                         layout_lang_select.setVisibility(View.GONE);
                         layout_lang_voice.setVisibility(View.GONE);
                         layout_lang_text.setVisibility(View.GONE);
+                        btn_lang.setBackgroundResource(R.drawable.translate);
                         layout_chat.setVisibility(View.VISIBLE);
+                        btn_chat.setBackgroundResource(R.drawable.chat_on);
                         focus = "채팅";
                     } else if(focus.equals("여행")) {
                         layout_travel.setVisibility(View.GONE);
+                        btn_travel.setBackgroundResource(R.drawable.earth);
                         layout_chat.setVisibility(View.VISIBLE);
+                        btn_chat.setBackgroundResource(R.drawable.chat_on);
                         focus = "채팅";
                     } else {
                         //btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 비활성화 아이콘으로 변경.
+                        //btn_chat.setBackgroundResource(R.drawable.translate);
                         layout_chat.setVisibility(View.GONE);
+                        btn_chat.setBackgroundResource(R.drawable.chat);
                         drawer.animateClose();
                     }
                 } else {
                     //btn_chat.setBackgroundResource(R.drawable.cat); // 채팅 활성화 아이콘으로 변경.
                     drawer.animateOpen();
                     layout_chat.setVisibility(View.VISIBLE);
+                    btn_chat.setBackgroundResource(R.drawable.chat_on);
                     focus = "채팅";
                 }
 
@@ -555,23 +637,29 @@ public class MainActivity extends AppCompatActivity
                 if(drawer.isOpened()) {
                     if(focus.equals("채팅")) {
                         layout_chat.setVisibility(View.GONE);
+                        btn_chat.setBackgroundResource(R.drawable.chat);
                         layout_lang_select.setVisibility(View.VISIBLE);
+                        btn_lang.setBackgroundResource(R.drawable.translate_on);
                         focus = "번역";
                     } else if(focus.equals("여행")) {
                         layout_travel.setVisibility(View.GONE);
+                        btn_travel.setBackgroundResource(R.drawable.earth);
                         layout_lang_select.setVisibility(View.VISIBLE);
+                        btn_lang.setBackgroundResource(R.drawable.translate_on);
                         focus = "번역";
                     } else {
                         //btn_chat.setBackgroundResource(R.drawable.cat); // 번역 비활성화 아이콘으로 변경.
                         layout_lang_select.setVisibility(View.GONE);
                         layout_lang_voice.setVisibility(View.GONE);
                         layout_lang_text.setVisibility(View.GONE);
+                        btn_lang.setBackgroundResource(R.drawable.translate);
                         drawer.animateClose();
                     }
                 } else {
                     //btn_chat.setBackgroundResource(R.drawable.cat); // 번역 활성화 아이콘으로 변경.
                     drawer.animateOpen();
                     layout_lang_select.setVisibility(View.VISIBLE);
+                    btn_lang.setBackgroundResource(R.drawable.translate_on);
                     focus = "번역";
                 }
             }
@@ -584,23 +672,29 @@ public class MainActivity extends AppCompatActivity
                 if(drawer.isOpened()) {
                     if(focus.equals("채팅")) {
                         layout_chat.setVisibility(View.GONE);
+                        btn_chat.setBackgroundResource(R.drawable.chat);
                         layout_travel.setVisibility(View.VISIBLE);
+                        btn_travel.setBackgroundResource(R.drawable.earth_on);
                         focus = "여행";
                     } else if(focus.equals("번역")) {
                         layout_lang_select.setVisibility(View.GONE);
                         layout_lang_voice.setVisibility(View.GONE);
                         layout_lang_text.setVisibility(View.GONE);
+                        btn_lang.setBackgroundResource(R.drawable.translate);
                         layout_travel.setVisibility(View.VISIBLE);
+                        btn_travel.setBackgroundResource(R.drawable.earth_on);
                         focus = "여행";
                     } else {
                         //btn_chat.setBackgroundResource(R.drawable.cat); // 여행 비활성화 아이콘으로 변경.
                         layout_travel.setVisibility(View.GONE);
+                        btn_travel.setBackgroundResource(R.drawable.earth);
                         drawer.animateClose();
                     }
                 } else {
                     //btn_chat.setBackgroundResource(R.drawable.cat); // 여행 활성화 아이콘으로 변경.
                     drawer.animateOpen();
                     layout_travel.setVisibility(View.VISIBLE);
+                    btn_travel.setBackgroundResource(R.drawable.earth_on);
                     focus = "여행";
                 }
             }
@@ -752,20 +846,42 @@ public class MainActivity extends AppCompatActivity
          */
 
         // 네비게이션 부분.===========
+//        text_nav_code = (TextView)findViewById(R.id.text_nav_code);
+//        text_nav_name = (TextView)findViewById(R.id.text_nav_name);
+//        text_nav_code.setText(nav_code);
+//        text_nav_name.setText(nav_name);
         // activity_main.xml
+        // 네비게이션 열기.
+        image_nav_open = (ImageView)findViewById(R.id.image_nav_open);
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         // 네비게이션메뉴 내용물 정의.
+
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_list, R.id.nav_profile, R.id.nav_schedule)
                 .setDrawerLayout(drawer)
                 .build();
+
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+//        text_nav_code = (TextView)findViewById(R.id.text_nav_code);
+//        text_nav_name = (TextView)findViewById(R.id.text_nav_name);
 
+        View headerView = navigationView.getHeaderView(0);
+        text_nav_code = (TextView)headerView.findViewById(R.id.text_nav_code);
+        text_nav_name = (TextView)headerView.findViewById(R.id.text_nav_name);
+        text_nav_code.setText("ORF7623");
+        text_nav_name.setText("정영주");
+        image_nav_open.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.openDrawer(GravityCompat.START);
+            }
+        });
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -783,8 +899,9 @@ public class MainActivity extends AppCompatActivity
                         startActivity(intent);
                         break;
                     case R.id.nav_schedule:
-                        Toast.makeText(getApplicationContext(), "일정 선택", Toast.LENGTH_LONG).show();
-                        break;
+                        Toast.makeText(getApplicationContext(), "프로필 선택", Toast.LENGTH_LONG).show();
+                        intent = new Intent(getApplicationContext(), ScheduleActivity.class);
+                        startActivity(intent);
 
                 }
                 // 닫아주기.
@@ -873,7 +990,7 @@ public class MainActivity extends AppCompatActivity
 
         final ArrayList<String> scheduleMainVO = new ArrayList<>();
 
-        schedule_myRef.child("이집트여행").addChildEventListener(new ChildEventListener() {
+        schedule_myRef.child("제주도 여행").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 if(snapshot.getKey().equals("line")) {
@@ -908,11 +1025,14 @@ public class MainActivity extends AppCompatActivity
                 MyListDecoration decoration = new MyListDecoration();
                 listview.addItemDecoration(decoration);
 
-                // 아이템 선택 시.
+                // 수평 탭 아이템 선택 시.
+                // 현 위치 => 선택 아이템까지 루트를 표시해야 함.
                 mainAadapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
                         // text_position.setText(adapter.itemList.get(position));
+                        // 위치 수신 정지.
+                        mFusedLocationClient.removeLocationUpdates(locationCallback);
                         Log.d("this", mainAadapter.itemList.get(position));
 
                         // 일정 이름 지정.
@@ -1021,6 +1141,9 @@ public class MainActivity extends AppCompatActivity
                 Log.d( TAG, "onMapClick :");
             }
         });
+
+        // 위치 갱신 시작.
+        startTimerTask();
     }
 
 
@@ -1147,11 +1270,17 @@ public class MainActivity extends AppCompatActivity
     public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
         if (currentMarker != null) currentMarker.remove();
         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        myLat = String.valueOf(location.getLatitude());
+        myLng = String.valueOf(location.getLongitude());
+        Log.d("location", myLat+","+myLng+"이 지금 내 위치.");
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(currentLatLng);
         markerOptions.title(markerTitle);
         markerOptions.snippet(markerSnippet);
         markerOptions.draggable(true);
+        //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.human_yellow));
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("human_yellow",100,100)));
         currentMarker = mMap.addMarker(markerOptions);
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
         mMap.moveCamera(cameraUpdate);
@@ -1172,7 +1301,7 @@ public class MainActivity extends AppCompatActivity
         markerOptions.title(markerTitle);                                                           // 타이틀
         markerOptions.snippet(markerSnippet);                                                       // 서브타이틀
         markerOptions.draggable(true);                                                              // 마커가 드래그 가능하도록 지정.
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)); // 마커 디자인 지정.
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)); // 마커 디자인 지정.
         currentMarker = mMap.addMarker(markerOptions);                                              // 마커 등록.
 
         // 카메라 옵션.
@@ -1352,6 +1481,7 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public void onDestroy() {
+        timer.cancel();
         if (tts != null)  {
             tts.stop();
             tts.shutdown();
@@ -1743,4 +1873,129 @@ public class MainActivity extends AppCompatActivity
         }
         return null;
     }
+
+    // 타이머 관련 메소드.
+    public void clickHandler(View view)
+    {
+//        switch(view.getId())
+//        {
+//            case R.id.btnStart:
+//                startTimerTask();
+//                break;
+//            case R.id.btnReset :
+//                stopTimerTask();
+//                break;
+//        }
+    }
+
+    private void startTimerTask()
+    {
+        stopTimerTask();
+
+
+        timerTask = new TimerTask()
+        {
+            MarkerOptions markerOptions = new MarkerOptions();
+            LatLng location;
+            String[] split;
+            String lat = "";
+            String lng = "";
+            Location my = new Location("내 위치");
+            Location ohter = new Location("상대방 위치");
+
+            // 위치가 갱신되는 시간
+            int count = 10;
+            @Override
+            public void run()
+            {
+                count--;
+//                timeText.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        timeText.setText(count + " 초");
+//                    }
+//                });
+                my.setLatitude(Float.parseFloat(myLat));
+                my.setLongitude(Float.parseFloat(myLng));
+
+                location_myRef.addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        // 만약 조회된 코드가 현재 진행중인 일정의 회원들 집합에 포함되어 있다면?
+                        // 그 회원을 지도에 갱신.
+                        // 대신 나 자신은 계속 마커 갱신중이므로 제외.
+                        if(thisPeople.contains(snapshot.getValue(UserHelperClass.class).getCode())&&!myCode.equals(snapshot.getValue(UserHelperClass.class).getCode())) {
+                            //Log.d("아시발", snapshot.getValue(UserHelperClass.class).getCode());
+                            split = snapshot.getValue(UserHelperClass.class).getGps().split(",");
+                            lat = split[0];
+                            lng = split[1];
+                            ohter.setLatitude(Float.parseFloat(lat));
+                            ohter.setLongitude(Float.parseFloat(lng));
+                            location = new LatLng(Float.parseFloat(lat),Float.parseFloat(lng));
+                            markerOptions.position(location).title(snapshot.getValue(UserHelperClass.class).getName());
+                            float distansce = my.distanceTo(ohter);
+                            // 나와 거리가 500m 이하면
+                            if(distansce<500) {
+                                //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("human_on",100,100)));
+                            } else {
+                                //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("human_off",100,100)));
+                            }
+                            mMap.addMarker(markerOptions);
+                        }
+                    }
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                    }
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                    }
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
+            }
+        };
+        timer.schedule(timerTask,0 ,1000);
+    }
+
+    private void stopTimerTask()
+    {
+        if(timerTask != null)
+        {
+            //timeText.setText("60 초");
+            mMap.clear();
+            timerTask.cancel();
+            timerTask = null;
+        }
+    }
+
+    // 길찾기 관련.
+    private String getUrl(LatLng origin, LatLng dest, String directionMode) {
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+        // Mode
+        String mode = "mode=" + directionMode;
+        // Building tghe parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + mode;
+        // Output format
+        String output = "json";
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + getString(R.string.google_map_key);
+        return url;
+    }
+
+    // 이미지 사이즈 변경.
+    public Bitmap resizeMapIcons(String iconName,int width, int height){
+        Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(),getResources().getIdentifier(iconName, "drawable", getPackageName()));
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
+        return resizedBitmap;
+    }
+
 }

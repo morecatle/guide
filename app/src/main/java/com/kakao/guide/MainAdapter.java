@@ -116,7 +116,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
             }
         }
         holder.text_main_scheduleName.setText(key);
-        holder.text_main_scheduleGPS.setText("10m");
+        //holder.text_main_scheduleGPS.setText("10m");
 
         //holder.textview.setTag(item);
         //holder.textview.setOnClickListener(onClickItem);
@@ -131,13 +131,13 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView text_main_scheduleAdd;
         public TextView text_main_scheduleName;
-        public TextView text_main_scheduleGPS;
+        //public TextView text_main_scheduleGPS;
 
         public ViewHolder(View itemView) {
             super(itemView);
             text_main_scheduleAdd = itemView.findViewById(R.id.text_main_scheduleAdd);
             text_main_scheduleName = itemView.findViewById(R.id.text_main_scheduleName);
-            text_main_scheduleGPS = itemView.findViewById(R.id.text_main_scheduleGPS);
+            //text_main_scheduleGPS = itemView.findViewById(R.id.text_main_scheduleGPS);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -6,8 +6,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,6 +24,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginActivity extends AppCompatActivity {
+    Animation faidIn;
+    LinearLayout all;
     EditText id, pw;
     TextView find, register;
     Button login;
@@ -37,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_layout);
-
+        all = (LinearLayout)findViewById(R.id.layout_login_all);
         id = (EditText) findViewById(R.id.edit_id);
         pw = (EditText) findViewById(R.id.edit_pw);
         login = (Button)findViewById(R.id.btn_login);
@@ -45,6 +50,10 @@ public class LoginActivity extends AppCompatActivity {
         find = (TextView) findViewById(R.id.text_find);
         register = (TextView) findViewById(R.id.text_register);
         //Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+
+
+        faidIn = AnimationUtils.loadAnimation(this, R.anim.fadein);
+        all.startAnimation(faidIn);
 
         id.addTextChangedListener(new TextWatcher() {
             @Override
@@ -136,10 +145,11 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        // 테스트임.
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
                 finish();
             }

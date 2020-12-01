@@ -25,12 +25,12 @@ public class MainViewer extends LinearLayout {
         inflater.inflate(R.layout.schedule_main,this,true);
         text_main_scheduleAdd = (TextView)findViewById(R.id.text_main_scheduleAdd);
         text_main_scheduleName = (TextView)findViewById(R.id.text_main_scheduleName);
-        text_main_scheduleGPS = (TextView)findViewById(R.id.text_main_scheduleGPS);
+        //text_main_scheduleGPS = (TextView)findViewById(R.id.text_main_scheduleGPS);
     }
     // 데이터 지정.
     public void setItem(ScheduleMainVO scheduleMainVO){
         text_main_scheduleAdd.setText(scheduleMainVO.getScheduleAdd());
         text_main_scheduleName.setText(scheduleMainVO.getSheduleName());
-        text_main_scheduleGPS.setText(scheduleMainVO.getScheduleGPS());
+        //text_main_scheduleGPS.setText(scheduleMainVO.getScheduleGPS());
     }
 }

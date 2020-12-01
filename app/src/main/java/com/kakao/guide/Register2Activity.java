@@ -28,7 +28,7 @@ public class Register2Activity extends AppCompatActivity {
     Boolean isWomanSelected=false; // 성별선택여부.
     Boolean done=false; // 오류없이 잘 입력했는지.
     Boolean answer = false; // 코드가 중복인지 여부.
-
+    Intent intent2;
     // 파이어베이스 연결.
     FirebaseDatabase rootNode;
     DatabaseReference reference;
@@ -40,7 +40,10 @@ public class Register2Activity extends AppCompatActivity {
 
         // ㅁㅁㅁㅁㅁ 이 클래스만 실행 시 주석 처리를 해야 정상실행됩니다.
         Intent intent = getIntent();
-        stPhone = intent.getExtras().getString("phone");
+        if(intent.getExtras().getString("phone")!=null) {
+            stPhone = intent.getExtras().getString("phone");
+        }
+
         /////
 
         code = (TextView)findViewById(R.id.text_code);
@@ -203,9 +206,13 @@ public class Register2Activity extends AppCompatActivity {
                 if(done) { // 입력 제대로 하면...
                     rootNode = FirebaseDatabase.getInstance();
                     reference = rootNode.getReference("user");
-                    UserHelperClass helperClass = new UserHelperClass(stCode, stName,stGender, stPass, stMail, stPhone);
+                    UserHelperClass helperClass = new UserHelperClass(stCode, stName,stGender, stPass, stMail, stPhone+"0,0");
 
                     reference.child(stCode).setValue(helperClass);
+                    intent2 = new Intent(Register2Activity.this, MainActivity.class);
+                    intent2.putExtra("phone", "01063462260");
+                    startActivity(intent2);
+                    finish();
                 }
             }
         });

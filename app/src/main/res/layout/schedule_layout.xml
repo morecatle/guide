@@ -54,6 +54,7 @@
                     android:divider="#E9ECFF"
                     android:transcriptMode="alwaysScroll"/>
                 <ImageView
+                    android:visibility="invisible"
                     android:layout_marginTop="15dp"
                     android:id="@+id/schedule_listAdd"
                     android:layout_gravity="center"

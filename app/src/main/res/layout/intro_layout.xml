@@ -4,20 +4,20 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background ="@color/app"
+    android:background ="@drawable/intro_start"
     android:gravity="center">
 
-    <ImageView
-        android:id="@+id/icon"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/cat"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="간단한 여행가이드\n삐약삐약"
-        android:textStyle="bold"
-        android:textSize="25dp"/>
+<!--    <ImageView-->
+<!--        android:id="@+id/icon"-->
+<!--        android:layout_width="fill_parent"-->
+<!--        android:layout_height="fill_parent"-->
+<!--        android:src="@drawable/intro_start" />-->
+    <!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="간단한 여행가이드\n삐약삐약"-->
+<!--        android:textStyle="bold"-->
+<!--        android:textSize="25dp"/>-->
 <!--
 android:scaleType="fitXY"는 이미지비율 상관없이 늘림.
 -->
