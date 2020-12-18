@@ -22,11 +22,11 @@ public class IntroActivity extends Activity {
                 startActivity(intent);
                 finish();
             }
-        },3000); // 3초 뒤에 Runner 객체 실행.
+        }, 3000); // 3초 뒤에 Runner 객체 실행.
     }
+
     @Override
     protected void onPause() {
         super.onPause();
-        finish();
     }
 }

@@ -1925,7 +1925,6 @@ public class MainActivity extends AppCompatActivity
                         // 그 회원을 지도에 갱신.
                         // 대신 나 자신은 계속 마커 갱신중이므로 제외.
                         if(thisPeople.contains(snapshot.getValue(UserHelperClass.class).getCode())&&!myCode.equals(snapshot.getValue(UserHelperClass.class).getCode())) {
-                            //Log.d("아시발", snapshot.getValue(UserHelperClass.class).getCode());
                             split = snapshot.getValue(UserHelperClass.class).getGps().split(",");
                             lat = split[0];
                             lng = split[1];
