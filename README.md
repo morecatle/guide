@@ -1,5 +1,3 @@
 # 졸업프로젝트
 
-**20151195 정영주**
-
-졸업프로젝트 저장용...
+**Google Maps API와 Firebase Realtime Database를 이용한 여행 가이드 앱 개발**
